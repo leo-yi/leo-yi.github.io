@@ -1,0 +1,39 @@
+<h2 id="basic_concept_title">基本概念</h2>
+
+<p>我们可以用一个简单的例子来说明依赖注入的概念</p>
+
+<p>下面的代码中有一个 <code>Database</code> 的类，它需要一个适配器来与数据库交互。我们在构造函数里实例化了适配器，从而产生了耦合。这会使测试变得很困难，而且 <code>Database</code> 类和适配器耦合的很紧密。</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">namespace</span> <span class="nx">Database</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Database</span>
+<span class="p">{</span>
+    <span class="k">protected</span> <span class="nv">$adapter</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">adapter</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">MySqlAdapter</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">MysqlAdapter</span> <span class="p">{}</span></code></pre></div>
+
+<p>这段代码可以用依赖注入重构，从而解耦</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">namespace</span> <span class="nx">Database</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Database</span>
+<span class="p">{</span>
+    <span class="k">protected</span> <span class="nv">$adapter</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nx">MySqlAdapter</span> <span class="nv">$adapter</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">adapter</span> <span class="o">=</span> <span class="nv">$adapter</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">MysqlAdapter</span> <span class="p">{}</span></code></pre></div>
+
+<p>现在我们通过外界给予 <code>Database</code> 类的依赖，而不是让它自己产生依赖的对象。我们甚至能用可以接受依赖对象参数的成员函数来设置，或者如果 <code>$adapter</code> 属性本身是 <code>public</code>的，我们可以直接给它赋值。</p>

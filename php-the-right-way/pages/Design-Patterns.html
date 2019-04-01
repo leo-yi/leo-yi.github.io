@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Design Patterns -  PHP 之道 | PHP The Right Way 中文版</title>
+        <meta name="description" content=""/>
+        <meta name="robots" content="index,follow,archive"/>
+        <meta property="og:image:url" content="http://www.phptherightway.com/images/og-image.png"/>
+        <meta property="og:image:width" content="1024"/>
+        <meta property="og:image:height" content="640"/>
+        <meta property="og:title" content="PHP: The Right Way"/>
+        <meta property="og:description" content="An easy-to-read, quick reference for PHP best practices, accepted coding standards, and links to authoritative PHP tutorials around the Web"/>
+        <meta property="og:url" content="http://www.phptherightway.com"/>
+        <meta property="og:site_name" content="PHP: The Right Way"/>
+        <meta property="og:type" content="website"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <link rel="icon" href="/php-the-right-way/images/favicon.png" type="image/png"/>
+        <link rel="stylesheet" href="/php-the-right-way/styles/syntax.css">
+        <base href="https://laravel-china.github.io/php-the-right-way/">
+        <style>
+        *{box-sizing:border-box}body{line-height:32px;text-rendering:optimizeLegibility;font-size:16px;color:#525252;font-family:NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,"Microsoft Yahei","Hiragino Sans GB","WenQuanYi Micro Hei",sans-serif}h1,h2,h3,h4{font-family:georgia,serif}h1,.alpha{position:relative;font-size:48px;font-weight:normal;line-height:50px;text-align:center}h2,.beta{font-size:32px;font-weight:normal;line-height:36px}h3,.gamma{font-size:24px;font-weight:bold;line-height:30px}blockquote{border-left:3px solid #ccc;padding-left:20px;color:#777;font-style:italic;word-wrap:break-word}a{color:#4f5b93}a:hover{color:#8892bf}.back-to-top{text-align:center}.back-to-top a{background:#4f5b93;border-radius:3px;display:inline-block;height:40px;padding:0 20px;transition:all .1s ease;color:white;font-family:verdana,sans-serif;font-size:13px;line-height:40px;text-decoration:none;text-transform:uppercase}.back-to-top a:hover{background:#8892bf}img{max-width:100%}pre,code{color:#444;font-family:"Source Code Pro",Consolas,"Andale Mono WT","Andale Mono","Lucida Console","Lucida Sans Typewriter","DejaVu Sans Mono","Bitstream Vera Sans Mono","Liberation Mono","Nimbus Mono L",Monaco,"Courier New",Courier,monospace;font-size:100%}a pre,a code{color:inherit}pre{background:#f7f7f7;border:1px solid #eee;border-radius:3px;display:block;overflow:auto;padding:20px;width:100%}@media (max-width:767px){body{font-size:18px;line-height:24px}h1,.alpha{font-size:36px;line-height:38px}h2,.beta{font-size:24px;line-height:28px}h3,.gamma{font-size:18px;line-height:23px}blockquote{margin-left:0}ul,ol{padding-left:1em}pre{padding:5px 10px;white-space:pre-wrap;white-space:-moz-pre-wrap;white-space:-pre-wrap;white-space:-o-pre-wrap;word-wrap:break-word}}@media (max-width:360px){body{font-size:16px;line-height:21px}h1,.alpha{font-size:28px;line-height:30px}h2,.beta{font-size:20px;line-height:23px}h3,.gamma{font-size:16px;line-height:20px}}.site-header{padding-top:40px;margin-bottom:40px;text-align:center}.site-header h1{margin:0;font-size:72px;line-height:60px}.site-header h1 em{display:block;font-size:34px;font-style:normal}.site-header h1 a{color:#333;text-decoration:none}.site-header h1 a:hover{color:#8892bf}.site-header .build-date{margin-bottom:10px;color:#999;font-family:verdana,sans-serif;font-size:11px;text-transform:uppercase}.site-header .btn-share{background:#8892bf;border-radius:3px;display:inline-block;height:30px;padding:0 20px;vertical-align:baseline;color:white;font-family:verdana,sans-serif;font-size:12px;line-height:30px;text-decoration:none;text-transform:uppercase}.site-header .fork-me{background-image:url(data:image/png;base64,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);background-position:top right;background-repeat:no-repeat;background-size:contain;height:162px;width:168px;position:absolute;top:0;right:0;z-index:100;}.site-navigation,.site-content,.site-footer{margin:0 auto;max-width:840px;width:92%}.site-navigation{-moz-columns:3;columns:3;-moz-column-gap:40px;column-gap:40px}.site-navigation input[type="checkbox"],.site-navigation label{display:none}.site-navigation ul{list-style:none;margin:0;padding:0}.site-navigation ul li{margin-bottom:20px;font-size:22px;line-height:28px}.site-navigation ul li a{display:block;color:#444;font-weight:700;text-decoration:none}.site-navigation ul li a:hover{color:#8892bf}.site-navigation ul li ul{padding-top:8px}.site-navigation ul li li{margin-bottom:6px;font-size:18px}.site-navigation ul li li a{border:none;color:#777;font-weight:normal}.site-navigation li{page-break-inside:avoid;break-inside:avoid}@media (max-width:820px){.site-navigation{-moz-columns:2;columns:2}}@media (max-width:560px){.site-navigation{-moz-columns:1;columns:1}}@media (max-width:375px){.site-navigation{background:rgba(255,255,255,0.95);-moz-columns:1;columns:1;max-height:100vh;position:fixed;bottom:0;left:0;z-index:100}.site-navigation label{background:#4f5b93;box-sizing:border-box;display:block;height:40px;padding:0 10px;width:100vh;position:absolute;bottom:0;left:0;color:white;font-family:verdana,sans-serif;font-size:13px;line-height:40px;text-transform:uppercase;z-index:2}.site-navigation>ul{background:rgba(255,255,255,0.96);border-top:3px solid #8892bf;box-shadow:rgba(0,0,0,0.25) 0 -5px 10px;box-sizing:border-box;padding:20px;overflow:auto;-webkit-overflow-scrolling:touch;position:absolute;left:0;bottom:40px;height:50vh;width:100vh;-ms-transform:translate(0, 100vh);transform:translate(0, 100vh);transition:all .2s ease;z-index:1}.site-navigation input[type="checkbox"]:checked~ul{-ms-transform:translate(0, 0);transform:translate(0, 0)}}.site-content h1{padding-top:40px;position:relative}.site-content h1:after{border:1px solid #ddd;border-bottom:none;content:"";display:block;height:8px;position:absolute;left:0;top:0;width:100%}.site-content.chapters{counter-reset:chapter}.site-content.chapters h1{counter-increment:chapter;padding-top:60px}.site-content.chapters h1:before{display:inline-block;content:"Chapter " counter(chapter) ".";position:absolute;top:30px;left:50%;-ms-transform:translateX(-50%);transform:translateX(-50%);color:#999;font-size:12px;letter-spacing:1px;line-height:20px;text-transform:uppercase;text-align:center}.site-content #welcome ul{-moz-columns:3;columns:3;-moz-column-gap:30px;column-gap:30px;list-style-position:inside}.site-content .back-to-top{margin-bottom:60px}@media (max-width:870px){.site-content #welcome ul{-moz-columns:2;columns:2}}@media (max-width:600px){.site-content #welcome ul{-moz-columns:1;columns:1}}.site-footer{border-top:1px solid #ccc;margin:60px auto 0 auto;padding:40px 20px;font-family:verdana,sans-serif;font-size:16px;text-align:center}.site-footer .cc-badge{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAAAfCAMAAABUFvrSAAAAw1BMVEX///8AAAAAAACrsar///8oKSjR1NAODg4jHyDLz8pAPz/f399wcHBQUFBgYGDJzcjEyMN5fHkwMDC9wry4vbeAgIDw8PDBxcDO0c3M0MyUmJPGysW6v7q/v7+fn5/T1tKvtK61urSxt7C/w76zuLKhpKDk5OSRk5F2c3RQUVAbGxuts6yEhoR9fnxDREMgICDW1dXJyMirq6qvr68wLS3Pz8+Rj4+Pj4+LioqEgYJaV1i6ubmbl5meoJ1dXl06NjcZGRmWw6QEAAAAAnRSTlMMANomgjQAAAMCSURBVHjatZYJc6JAEIWznWFmOAQDguAdjUqMd0yi5vz/v2q7GTmkNusWW3kxNfJkPts3TMPVFfyIfiH3ttHwRs1623F0PYp03XHa9ebI6zRu74aDwcPDdQUBXCG3440Qq4ec91GchzqhM/J1FSEYuVguYudLASixnBM6JVPJNxqgtJts2mWHwMh1Ij6dQabZlEeKfDccDlo4xbAsA6e11KzLDoG9EXHvqVbb73Z9m+q+r4dEppLHAmomQ5k1EMmsi44CY74JV/gBU+ohWqtjzSMMY6iBjR4AfQAaTVLO87HkTDabiXIUuNnWieuaLFPgYs1cb1PJC6itUzCrwQ2mCe4bcr9EPEkdOmcsUa+Jo8B1J5wiF8s9J0/DpGQNCt9ogkbladKwwZ/DNnNMtpGfdizlMzkKjAXPQDyxMwUCZqpkMOjYBrBpNADnGDESZDxZ5w4L3uQec5A7chTYCecAPiupBzDHkr0OWHQIKBotwqCzidGI17kTSKlhzFJOyFFgvgSBQXRrhuGr4QUnCFhyzOIbMDLinZTH18y523UTsJmBdS7ARiCQjEcg2fTjBdfrzc6foqCsemwtUUbqvI43jG2lxHMyMACW6MLK7K56Lrjm46qXZNGnkE+LB5AvHjlHudtBvF3MUqcn5eGgybd88aI+AP4KlbMaSF0ERwj2ocZKlxs5k8OXeA6KzkGirICcfwI3ChvEKm6Q/bHkbLbbtXLKUQRPKx+joCGPorGttKXzxTutWrZ41mnxGrdjDcC1LTdvOZcddbndg2DZ5fZoJANbqcuNGtygWttMdvTLtxsE+1uFXp9vafO7LV0ZTE3o/S9NqBqXwLDQ+QeSC23IVG1zDtVFYLD0s0Yf+ALgk0cL+F8wLCL+Ubo18agFqdT+oDeZo/7RL53EzsGUxnvpZtoqzDm9WO6o49JXKaMIpjRCPk1v/1Me6sUc0rZZcE5/BaXtpAQGd4Bozul5BbEDAwoqB6GcrOLcLFesZOw99Yjl7Ql7oeIUXjynBP4h/djT5m+nuF33PcPucwAAAABJRU5ErkJggg==);background-position:top left;background-repeat:no-repeat;background-size:contain;display:inline-block;height:31px;width:88px}.site-footer h2{font-size:24px;font-weight:bold;line-height:30px;margin-bottom:10px}.site-footer ul{list-style:none;margin:0 0 20px 0;padding:0}.site-footer .license{color:#777;font-size:13px}
+        </style>
+    </head>
+    <body>
+            <header class="site-header">
+                    <h1><a href="/">PHP <em>The Right Way</em></a></h1>
+                    <div class="build-date">最后更新于: 2019-04-01 17:18:57 +0800 由 <a href="https://blog.oyifan.com/" target="_blank" >Leo Yi</a>个人维护</div>
+                    <a class="fork-me" href="https://github.com/leo-yi/php-the-right-way" target="_blank"></a>
+            </header>
+
+        <div class="site-content">
+            <h1 id="section">设计模式</h1>
+
+<p>构建一个 web 应用或工程有无数种方式，同样，架构的方式也有无数种。但是我们建议遵循一些常见的模式，因为这会让你的代码更容易管理，可读性更高。</p>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Architectural_pattern">维基百科——架构模式</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Software_design_pattern">维基百科——软件设计模式</a></li>
+  <li><a href="http://designpatternsphp.readthedocs.io/en/latest/">一些设计模式的例子</a></li>
+</ul>
+
+<h2 id="section-1">工厂模式</h2>
+
+<p>最常用的设计模式就是工厂模式。在这个模式下，需要一个用来创建你需要的对象的类。考虑下面的工厂模式的例子：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">class</span> <span class="nc">Automobile</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="nv">$vehicleMake</span><span class="p">;</span>
+    <span class="k">private</span> <span class="nv">$vehicleModel</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nv">$make</span><span class="p">,</span> <span class="nv">$model</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicleMake</span> <span class="o">=</span> <span class="nv">$make</span><span class="p">;</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicleModel</span> <span class="o">=</span> <span class="nv">$model</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getMakeAndModel</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicleMake</span> <span class="o">.</span> <span class="s1">' '</span> <span class="o">.</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">vehicleModel</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">AutomobileFactory</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">function</span> <span class="nf">create</span><span class="p">(</span><span class="nv">$make</span><span class="p">,</span> <span class="nv">$model</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nx">Automobile</span><span class="p">(</span><span class="nv">$make</span><span class="p">,</span> <span class="nv">$model</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// 用工厂的 create 方法创建 Automobile 对象</span>
+<span class="nv">$veyron</span> <span class="o">=</span> <span class="nx">AutomobileFactory</span><span class="o">::</span><span class="na">create</span><span class="p">(</span><span class="s1">'Bugatti'</span><span class="p">,</span> <span class="s1">'Veyron'</span><span class="p">);</span>
+
+<span class="nb">print_r</span><span class="p">(</span><span class="nv">$veyron</span><span class="o">-&gt;</span><span class="na">getMakeAndModel</span><span class="p">());</span> <span class="c1">// outputs "Bugatti Veyron"</span></code></pre></div>
+
+<p>上面的代码用来一个工厂来创建 Automobile 对象。用这种方式创建对象有两个好处：
+首先，如果你后续需要更改，重命名或替换 Automobile 类，你只需要更改工厂类中的代码，而不是在每一个用到 Automobile 类的地方修改；
+其次，如果创建对象的过程很复杂，你也只需要在工厂类中写，而不是在每个创建实例的地方重复地写。</p>
+
+<p>当然，用工厂模式并不总是必要（或者明智）。上面的示例代码很简单，在实践中，工厂类中会被加入一些不必要的复杂性。
+如果你是在做一个很大很复杂的项目，使用工厂模式将会给你省去很多麻烦。</p>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Factory_pattern">维基百科——工厂模式</a></li>
+</ul>
+
+<h2 id="section-2">单例模式</h2>
+
+<p>我们设计 web 应用时，我们经常需要取得某个类的唯一实例，单例模式就帮我们解决了这个问题。</p>
+
+<p><strong>TODO: NEED NEW SINGLETON CODE EXAMPLE</strong></p>
+
+<p>上面的代码用<a href="http://php.net/language.variables.scope#language.variables.scope.static"><strong>静态</strong>变量</a> 实现了单例模式和创建单例的静态方法 <code>getInstance()</code>.
+请注意以下几点：</p>
+
+<ul>
+  <li>构造函数 <a href="http://php.net/language.oop5.decon#object.construct"><code>__construct()</code></a> 被声明为 protected 是为了防止用 <code>new</code> 操作符在这个类之外创建新的实例。</li>
+  <li>魔术方法 <a href="http://php.net/language.oop5.cloning#object.clone"><code>__clone()</code></a> 被声明为 private 是为了防止用 <a href="http://php.net/language.oop5.cloning"><code>clone</code></a> 操作符克隆出新的实例.</li>
+  <li>魔术方法 <a href="http://php.net/language.oop5.magic#object.wakeup"><code>__wakeup()</code></a> 被声明为 private 是为了防止通过全局函数 <a href="http://php.net/function.unserialize"><code>unserialize()</code></a> 反序列化这个类的实例。</li>
+  <li>新的实例是用过静态方法 <code>getInstance()</code> 使用<a href="http://php.net/language.oop5.late-static-bindings">后期静态绑定</a>生成的。这允许我们对 <code>Singleton</code> 类进行继承，并且在取得 <code>SingletonChild</code> 的单例时不会出现问题。</li>
+</ul>
+
+<p>单例模式是非常有用的，特别是我们需要确保在整个请求的声明周期内只有一个实例存在。
+典型的应用场景是，当我们有一个全局的对象（比如配置类）或一个共享的资源（比如事件队列）时。</p>
+
+<p>你应该非常小心地使用单例模式，因为它非常自然地引入了全局状态到你的应用中，降低了可测试性。
+在大多数情况下，依赖注入可以（并且应该）代替单例类。
+使用依赖注入意味着我们不会在设计应用时引入不必要的耦合，因为对象使用共享的或全局的资源，不再需要耦合具体的类。</p>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Singleton_pattern">维基百科——单例模式</a></li>
+</ul>
+
+<h2 id="section-3">策略模式</h2>
+
+<p>使用策略模式，你可以把一族不同的算法（业务）封装到不同的类中，使 client 类可以在不知道具体实现的情况下选择实例化其中一个算法。策略模式有几种不同的变体，最简单的是下面这种：</p>
+
+<p>第一段代码展示了一族输出算法，分别具体实现了 <code>OutputInterface</code> 的 <code>load</code> 方法，返回序列化结果，json 和数组：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+
+<span class="k">interface</span> <span class="nx">OutputInterface</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">load</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">SerializedArrayOutput</span> <span class="k">implements</span> <span class="nx">OutputInterface</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">load</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">serialize</span><span class="p">(</span><span class="nv">$arrayOfData</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">JsonStringOutput</span> <span class="k">implements</span> <span class="nx">OutputInterface</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">load</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">json_encode</span><span class="p">(</span><span class="nv">$arrayOfData</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">ArrayOutput</span> <span class="k">implements</span> <span class="nx">OutputInterface</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">load</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$arrayOfData</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>通过像上面这样把不同类型的输出算法封装起来，其他的开发者可以很容易地在不影响 client 代码的情况下添加新的输出类型。</p>
+
+<p>每个具体的输出类实现了 <code>OutputInterface</code> —— 这有两个目的，第一是它提供了一个所有输出类都必须遵守的契约，第二，你将会在本文后面的部分看到，通过实现公共的接口，你可以利用<a href="http://php.net/language.oop5.typehinting">类型约束</a>保证 client 中使用的输出类必须是实现了 <code>OutputInterface</code> 的类。</p>
+
+<p>接下来的一小段代码展示了一个 client 类如何使用其中一个输出算法，并可以在运行时根据需要选用不同的算法。</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">class</span> <span class="nc">SomeClient</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="nv">$output</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">setOutput</span><span class="p">(</span><span class="nx">OutputInterface</span> <span class="nv">$outputType</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">output</span> <span class="o">=</span> <span class="nv">$outputType</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">loadOutput</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">output</span><span class="o">-&gt;</span><span class="na">load</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>上面的 <code>client</code>类有一个必须在运行时设置的私有属性，并且是“OutputInterface”类型的。
+一旦这个属性被设置为具体的实例（三个输出类中之一的实例），并且 <code>loadOutput</code> 方法被调用，那么它的 <code>load</code> 方法就会被调用，返回回序列化结果或 json 或数组。</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="nv">$client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">SomeClient</span><span class="p">();</span>
+
+<span class="c1">// Want an array?</span>
+<span class="nv">$client</span><span class="o">-&gt;</span><span class="na">setOutput</span><span class="p">(</span><span class="k">new</span> <span class="nx">ArrayOutput</span><span class="p">());</span>
+<span class="nv">$data</span> <span class="o">=</span> <span class="nv">$client</span><span class="o">-&gt;</span><span class="na">loadOutput</span><span class="p">();</span>
+
+<span class="c1">// Want some JSON?</span>
+<span class="nv">$client</span><span class="o">-&gt;</span><span class="na">setOutput</span><span class="p">(</span><span class="k">new</span> <span class="nx">JsonStringOutput</span><span class="p">());</span>
+<span class="nv">$data</span> <span class="o">=</span> <span class="nv">$client</span><span class="o">-&gt;</span><span class="na">loadOutput</span><span class="p">();</span></code></pre></div>
+
+<ul>
+  <li><a href="http://en.wikipedia.org/wiki/Strategy_pattern">维基百科——策略模式</a></li>
+</ul>
+
+<h2 id="section-4">前端控制器模式</h2>
+
+<p>前端控制器模式就是给你的 web 应用程序设置单一的入口（比如 index.php），用来集中处理所有请求的机制。
+它的职责是载入所有依赖，处理请求，并发送响应给浏览器。前端控制器模式对整个架构是有益的，因为它鼓励模块化代码，并给了你一个单入口，可以写一些每个请求都需要跑的代码（比如输入数据的过滤）。</p>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Front_Controller_pattern">维基百科——前端控制器模式</a></li>
+</ul>
+
+<h2 id="mvc">模型-视图-控制器（MVC）</h2>
+
+<p>模型-视图-控制器 (MVC) 模式还有和它相关的 HMVC、HVVM 让你根据逻辑对象的不同作用去解耦。
+模型用来作为数据访问层，并以应用中通用的格式返回数据。
+控制器处理请求，处理从模型层返回的数据，并载入视图，发送响应。
+视图用来展示需要在响应中使用的模板（markup, xml 等等）。</p>
+
+<p>MVC 是在各个<a href="https://github.com/codeguy/php-the-right-way/wiki/Frameworks">PHP 框架</a>中使用最普遍的架构模式。</p>
+
+<p>学习更多 MVC 及其相关架构模式的链接：</p>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Model%E2%80%93View%E2%80%93Controller">MVC</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Hierarchical_model%E2%80%93view%E2%80%93controller">HMVC</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Model_View_ViewModel">MVVM</a></li>
+</ul>
+
+<p>（译者注：MVC 属架构模式，和设计模式是不同层级的概念，请不要因为本文把它列在“设计模式”下而混淆。）</p>
+
+        </div>
+
+        <footer class="site-footer" id="credits">
+                <h2>中文版本</h2>  
+                <ul>
+                    <li><a href="https://github.com/leo-yi/php-the-right-way/" target="_blank">Leo Yi</a></li>
+                    <li><a href="https://github.com/laravel-china/php-the-right-way/graphs/contributors" target="_blank">项目贡献者</a></li>
+                </ul>
+                <h2>感谢之前的维护者</h2>
+                <ul>
+                    <li><a href="https://github.com/summerblue" target="_blank">Summer</a></li>
+                    <li><a href="https://laravel-china.org/" target="_blank">Laravel China 社区</a></li>
+                </ul>
+                <h2>原始版本创建和维护</h2>
+                <ul>
+                        <li><a href="https://joshlockhart.com" target="_blank">Josh Lockhart</a></li>
+                        <li><a href="https://philsturgeon.uk/" target="_blank">Phil Sturgeon</a></li>
+                        <li><a href="https://github.com/codeguy/php-the-right-way/graphs/contributors" target="_blank">Project Contributors</a></li>
+                </ul>
+                <div class="license">
+                    <a class="cc-badge" rel="license" href="https://creativecommons.org/licenses/by-nc-sa/3.0/"></a>
+                    <br />
+                    <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">PHP: The Right Way</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://joshlockhart.com" property="cc:attributionName" rel="cc:attributionURL">Josh Lockhart</a>
+                    <br/>
+                    is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.<br />Based on a work at <a xmlns:dct="http://purl.org/dc/terms/" href="https://www.phptherightway.com" rel="dct:source">www.phptherightway.com</a>.
+                </div>
+        </footer>
+    </body>
+</html>

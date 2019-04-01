@@ -1,0 +1,58 @@
+<h2 id="phpdoc_title">PHPDoc</h2>
+
+<p>PHPDoc 是注释 PHP 代码的非正式标准。它有<em>许多</em>不同的<a href="https://docs.phpdoc.org/references/phpdoc/tags/index.html">标记</a>可以使用。完整的标记列表和范例可以查看 <a href="https://docs.phpdoc.org/index.html">PHPDoc 指南</a>。</p>
+
+<p>如下是撰写类方法时的一种写法：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="sd">/**
+ * @author A Name &lt;a.name@example.com&gt;
+ * @link http://www.phpdoc.org/docs/latest/index.html
+ */</span>
+<span class="k">class</span> <span class="nc">DateTimeHelper</span>
+<span class="p">{</span>
+    <span class="sd">/**
+     * @param mixed $anything Anything that we can convert to a \DateTime object
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return \DateTime
+     */</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">dateTimeFromAnything</span><span class="p">(</span><span class="nv">$anything</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$type</span> <span class="o">=</span> <span class="nb">gettype</span><span class="p">(</span><span class="nv">$anything</span><span class="p">);</span>
+
+        <span class="k">switch</span> <span class="p">(</span><span class="nv">$type</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Some code that tries to return a \DateTime object</span>
+        <span class="p">}</span>
+
+        <span class="k">throw</span> <span class="k">new</span> <span class="nx">\InvalidArgumentException</span><span class="p">(</span>
+            <span class="s2">"Failed Converting param of type '</span><span class="si">{</span><span class="nv">$type</span><span class="si">}</span><span class="s2">' to DateTime object"</span>
+        <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="sd">/**
+     * @param mixed $date Anything that we can convert to a \DateTime object
+     *
+     * @return void
+     */</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">printISO8601Date</span><span class="p">(</span><span class="nv">$date</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">echo</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">dateTimeFromAnything</span><span class="p">(</span><span class="nv">$date</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">'c'</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="sd">/**
+     * @param mixed $date Anything that we can convert to a \DateTime object
+     */</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">printRFC2822Date</span><span class="p">(</span><span class="nv">$date</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">echo</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">dateTimeFromAnything</span><span class="p">(</span><span class="nv">$date</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">'r'</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>这个类的说明使用了 <a href="https://docs.phpdoc.org/references/phpdoc/tags/author.html">@author</a> 和 <a href="https://docs.phpdoc.org/references/phpdoc/tags/link.html">@link</a>标记， <a href="https://docs.phpdoc.org/references/phpdoc/tags/author.html">@author</a> 标记是用來说明代码的作者，在多位开发者的情况下，可以同时列出好几位。其次 <a href="https://docs.phpdoc.org/references/phpdoc/tags/link.html">@link</a> 标记用来提供网站链接，进一步说明代码和网站之间的关系。</p>
+
+<p>在这个类中，第一个方法的 <a href="https://docs.phpdoc.org/references/phpdoc/tags/param.html">@param</a> 标记，说明类型、名字和传入方法的参数。此外，<a href="https://docs.phpdoc.org/references/phpdoc/tags/return.html">@return</a> 和 <a href="https://docs.phpdoc.org/references/phpdoc/tags/throws.html">@throws</a> 标记说明返回类型以及可能抛出的异常。</p>
+
+<p>第二、第三个方法非常类似，和第一个方法一样使用一个 <a href="https://docs.phpdoc.org/references/phpdoc/tags/param.html">@param</a> 标记。第二、和第三个方法之间关键差別在注释区块使用／排除 <a href="https://docs.phpdoc.org/references/phpdoc/tags/return.html">@return</a> 标记。<code>@return void</code> 标记明确告诉我们没有返回值，而过去省略 <code>@return void</code> 声明也具有相同效果（沒有返回任何值）。</p>
+

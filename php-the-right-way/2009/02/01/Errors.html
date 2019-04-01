@@ -1,0 +1,97 @@
+<h2 id="errors_title">错误</h2>
+
+<p>在许多「重异常」(exception-heavy) 的编程语言中，一旦发生错误，就会抛出异常。这确实是一个可行的方式。不过 PHP 却是一个 「轻异常」(exception-light) 的语言。当然它确实有异常机制，在处理对象时，核心也开始采用这个机制来处理，只是 PHP 会尽可能的执行而无视发生的事情，除非是一个严重错误。</p>
+
+<p>举例来说:</p>
+
+<div class="highlight"><pre><code class="language-console" data-lang="console"><span class="gp">$</span> php <span class="nt">-a</span>
+<span class="gp">php &gt;</span> <span class="nb">echo</span> <span class="nv">$foo</span><span class="p">;</span>
+<span class="go">Notice: Undefined variable: foo in php shell code on line 1</span></code></pre></div>
+
+<p>这里只是一个 notice 级别的错误，PHP 仍然会愉快的继续执行。这对有「重异常」编程经验的人来说会带来困惑，例如在 Python 中，引用一个不存在的变量会抛出异常：</p>
+
+<div class="highlight"><pre><code class="language-console" data-lang="console"><span class="gp">$</span> python
+<span class="gp">&gt;</span><span class="o">&gt;&gt;</span> print foo
+<span class="go">Traceback (most recent call last):
+</span><span class="gp">  File "&lt;stdin&gt;</span><span class="s2">", line 1, in &lt;module&gt;
+</span><span class="go">NameError: name 'foo' is not defined</span></code></pre></div>
+
+<p>本质上的差异在于 Python 会对任何小错误进行抛错，因此开发人员可以确信任何潜在的问题或者边缘的案例都可以被捕捉到，与此同时 PHP 仍然会保持执行，除非极端的问题发生才会抛出异常。</p>
+
+<h3 id="section">错误严重性</h3>
+
+<p>PHP 有几个错误严重性等级。三个最常见的的信息类型是错误（error）、通知（notice）和警告（warning）。它们有不同的严重性: <code>E_ERROR</code> 、<code>E_NOTICE</code>和 <code>E_WARNING</code>。错误是运行期间的严重问题，通常是因为代码出错而造成，必须要修正它，否则会使 PHP 停止执行。通知是建议性质的信息，是因为程序代码在执行期有可能造成问题，但程序不会停止。
+警告是非致命错误，程序执行也不会因此而中止。</p>
+
+<p>另一个在编译期间会报错的信息类型是 <code>E_STRICT</code>。这个信息用來建议修改程序代码以维持最佳的互通性并能与今后的 PHP 版本兼容。</p>
+
+<h3 id="php-">更改 PHP 错误报告行为</h3>
+
+<p>错误报告可以由 PHP 配置及函数调用改变。使用 PHP 内置的函数 <code>error_reporting()</code>，可以设定程序执行期间的错误等级，方法是传入预定义的错误等级常量，意味着如果你只想看到警告和错误（而非通知），你可以这样设定：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="nb">error_reporting</span><span class="p">(</span><span class="k">E_ERROR</span> <span class="o">|</span> <span class="k">E_WARNING</span><span class="p">);</span></code></pre></div>
+
+<p>你也可以控制错误是否在屏幕上显示 （开发时比较有用）或隐藏后记录日志 （适用于正式环境）。如果想知道更多细节，可以查看 <a href="errorreport">错误报告</a> 章节。</p>
+
+<h3 id="section-1">行内错误抑制</h3>
+
+<p>你可以让 PHP 利用错误控制操作符 <code>@</code> 来抑制特定的错误。将这个操作符放置在表达式之前，其后的任何错误都不会出现。</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">echo</span> <span class="o">@</span><span class="nv">$foo</span><span class="p">[</span><span class="s1">'bar'</span><span class="p">];</span></code></pre></div>
+
+<p>如果 <code>$foo['bar']</code> 存在，程序会将结果输出，如果变量 <code>$foo</code> 或是 <code>'bar'</code> 键值不存在，则会返回 null 并且不输出任何东西。如果不使用错误控制操作符，这个表达式会产生一个错误信息 <code>PHP Notice: Undefined
+variable: foo</code> 或 <code>PHP Notice: Undefined index: bar</code> 。</p>
+
+<p>这看起来像是个好主意，不过也有一些讨厌的代价。PHP 处理使用 <code>@</code> 的表达式比起不用时效率会低一些。过早的性能优化在所有程序语言中也许都是争论点，不过如果性能在你的应用程序 / 类库中占有重要地位，那么了解错误控制操作符的性能影响就比较重要。</p>
+
+<p>其次，错误控制操作符会 <strong>完全</strong> 吃掉错误。不但没有显示，而且也不会记录在错误日志中。此外，在正式环境中 PHP 也没有办法关闭错误控制操作符。也许你认为那些错误时无害的，不过那些较具伤害性的错误同时也会被隐藏。</p>
+
+<p>如果有方法可以避免错误抑制符，你应该考虑使用，举例来说，上面的程序代码可以这样重写：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="c1">//Null Coalescing Operator</span>
+<span class="k">echo</span> <span class="nv">$foo</span><span class="p">[</span><span class="s1">'bar'</span><span class="p">]</span> <span class="o">??</span> <span class="s1">''</span><span class="p">;</span></code></pre></div>
+
+<p>当 <code>fopen()</code> 载入文件失败时，也许是一个使用错误抑制符的合理例子。你可以在尝试载入文件前检查是否存在，但是如果这个文件在检查后才被删除，而此时 <code>fopen()</code> 还未执行 （听起来有点不太可能，但是确实会发生），这时 <code>fopen()</code> 会返回 false <em>并且</em> 抛出操作。这也许应该由 PHP 本身来解决，但这时一个错误抑制符才能有效解决的例子。</p>
+
+<p>前面我们提到在正式的 PHP 环境中没有办法关闭错误控制操作符。但是 <a href="https://xdebug.org/docs/basic">Xdebug</a> 有一个 <code>xdebug.scream</code> 的 ini 配置项，可以关闭错误控制操作符。你可以按照下面的方式修改 <code>php.ini</code>。</p>
+
+<div class="highlight"><pre><code class="language-ini" data-lang="ini"><span class="py">xdebug.scream</span> <span class="p">=</span> <span class="s">On</span></code></pre></div>
+
+<p>你也可以在执行期间通过 <code>ini_set</code> 函数来设置这个值：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="nb">ini_set</span><span class="p">(</span><span class="s1">'xdebug.scream'</span><span class="p">,</span> <span class="s1">'1'</span><span class="p">)</span></code></pre></div>
+
+<p>「Scream」这个 PHP 扩展提供了和 xDebug 类似的功能，只是 Scream 的 ini 设置项叫做 <code>scream.enabled</code> 。</p>
+
+<p>当你在调试代码而错误信息被隐藏时，这是最有用的方法。请务必小心使用 scream ，而是把它当作暂时性的调试工具。有许多的 PHP 函数类库代码也许无法在错误抑制操作符停用时正常使用。</p>
+
+<ul>
+  <li><a href="https://secure.php.net/language.operators.errorcontrol">Error Control Operators</a></li>
+  <li><a href="https://www.sitepoint.com/">SitePoint</a></li>
+  <li><a href="https://xdebug.org/docs/basic">Xdebug</a></li>
+  <li><a href="https://secure.php.net/book.scream">Scream</a></li>
+</ul>
+
+<h3 id="section-2">错误异常类</h3>
+
+<p>PHP 可以完美化身为「重异常」的程序语言，只需要几行代码就能切换过去。基本上你可以利用 <code>ErrorException</code> 类抛出「错误」来当做「异常」，这个类是继承自 <code>Exception</code> 类。</p>
+
+<p>这在大量的现代框架中是一个常见的做法，比如 Symfony 和 Laravel。如果开启调试模式，或者进入开发环境的话，这两个框架都会将显示美观清晰的 <em>调用栈</em>。</p>
+
+<p>There are also some packages available for better error and exception handling and reporting. Like <a href="https://filp.github.io/whoops/">Whoops!</a>, which comes with the default installation of Laravel and can be used in any framework as well.</p>
+
+<p>在开发过程中将错误当作异常抛出可以更好的处理它，如果在开发时发生异常，你可以将它包在一个 catch 语句中具体说明这种情况如何处理。每捕捉一个异常，都会使你的应用程序越来越健壮。</p>
+
+<p>更多关于如何使用 <code>ErrorException</code> 来处理错误的细节，可以参考 <a href="errorexception">ErrorException Class</a>。</p>
+
+<ul>
+  <li><a href="https://secure.php.net/language.operators.errorcontrol">Error Control Operators</a></li>
+  <li><a href="https://secure.php.net/errorfunc.constants">Predefined Constants for Error Handling</a></li>
+  <li><a href="https://secure.php.net/function.error-reporting"><code>error_reporting()</code></a></li>
+  <li><a href="/#error_reporting">Reporting</a></li>
+</ul>
+

@@ -1,0 +1,49 @@
+<h2 id="mac_setup_title">Mac 安装</h2>
+
+<p>macOS 系统会预装 PHP， 只是一般情况下版本会比最新稳定版低一些。</p>
+
+<p>以下介绍几种在 macOS 上安装最新版本 PHP 的方法。</p>
+
+<h3 id="homebrew--php">通过 Homebrew 安装 PHP</h3>
+
+<p><a href="http://brew.sh/">Homebrew</a> 是一个强大的 macOS 专用包管理器， 它可以帮助你轻松的安装 PHP 和各种扩展。
+<a href="https://github.com/Homebrew/homebrew-php#installation">Homebrew PHP</a> 是一个包含与 PHP 相关的 Formulae，能让你通过 homebrew 安装 PHP 的仓库。</p>
+
+<p>也就是说, 你可以通过 <code>brew install</code> 命令安装 <code>php56</code>、<code>php70</code>、<code>php71</code>或者 <code>php72</code>，并且通过修改 <code>PATH</code> 变量来切换各个版本。或者你也可以使用 <a href="https://github.com/philcook/brew-php-switcher">brew-php-switcher</a> 来自动切换。</p>
+
+<h3 id="install-php-via-macports">Install PHP via Macports</h3>
+<p>### 通过 Macports 安装 PHP</p>
+
+<p><a href="https://www.macports.org/install.php">MacPorts</a> 是一个开源的，社区发起的项目，它的目的在于设计一个易于使用的系统，方便编译，安装以及升级 macOS 系统上的 command-line, X11 或者基于 Aqua 的开源软件。</p>
+
+<p>MacPorts 支持预编译的二进制文件，因此你不必每次都重新从源码压缩包编译，如果你的系统没有安装这些包，它会节省你很多时间。</p>
+
+<p>此时，你可以通过 <code>port install</code> 命名来安装 <code>php56</code>、<code>php70</code>、<code>php71</code>或者 <code>php72</code>，比如：</p>
+
+<pre><code>sudo port install php56
+sudo port install php71
+</code></pre>
+
+<p>你也可以执行 <code>select</code> 命令来切换当前的 php 版本：</p>
+
+<pre><code>sudo port select --set php php71
+</code></pre>
+
+<h3 id="phpbrew--php">通过 phpbrew 安装 PHP</h3>
+
+<p><a href="https://github.com/phpbrew/phpbrew">phpbrew</a> 是一个安装与管理多个 PHP 版本的工具。它在应用程序或者项目需要不同版本的 PHP 时非常有用，让你不再需要使用虚拟机来处理这些情况。</p>
+
+<h3 id="liips-binary-installer--php">通过 Liip’s binary installer 安装 PHP</h3>
+<p><a href="http://php-osx.liip.ch/">php-osx.liip.ch</a> 是另一种流行的选择，它提供了从 5.3 到 7.1 版本的单行安装功能。
+它并不会覆盖Apple集成的PHP文件，而是将其安装在了一个独立的目录中(/usr/local/php5)。</p>
+
+<h3 id="section">源码编译</h3>
+
+<p>另一个让你控制安装 PHP 版本的选择就是 <a href="http://php.net/install.macosx.compile">自行编译</a>。
+如果使用这种方法， 你必须先确认是否已经通过 「Apple’s Mac Developer Center」 下载、安装 <a href="https://github.com/kennethreitz/osx-gcc-installer">Xcode</a> 或者 <a href="https://developer.apple.com/downloads">“Command Line Tools for XCode”</a>。</p>
+
+<h3 id="all-in-one-installers">集成包 (All-in-One Installers)</h3>
+
+<p>上面列出的解决方案主要是针对 PHP 本身， 并不包含：比如 Apache，Nginx 或者 SQL 服务器。
+集成包比如 <a href="http://www.mamp.info/en/downloads/">MAMP</a> 和 <a href="http://www.apachefriends.org/en/xampp.html">XAMPP</a> 会安装这些软件并且将他们绑在一起，不过易于安装的背后也牺牲了一定的弹性。</p>
+

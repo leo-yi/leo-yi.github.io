@@ -1,0 +1,46 @@
+<h2 id="compiled_templates_title">编译模板</h2>
+
+<p>尽管 PHP 不断升级为成熟的、面向对象的语言，但它作为模板语言 <a href="http://fabien.potencier.org/article/34/templating-engines-in-php">没有改善多少</a>。编译模板，比如 <a href="https://github.com/box/brainy">Twig</a> 或 <a href="https://www.smarty.net/">Smarty</a>* ，提供了模板专用的新语法，填补了这片空白。从自动转义到继承以及简化控制结构，编译模板设计地更容易编写，可读性更高，同时使用上也更加的安全。编译模板甚至可以在不同的语言中使用，<a href="https://mustache.github.io/">Mustache</a> 就是一个很好的例子。由于这些模板需要编译，在性能上会带来一些轻微的影响，不过如果适当的使用缓存，影响就变得非常小了。</p>
+
+<p><em>*虽然 Smarty 提供了自动转义的功能, 不过这个功能默认是关闭的</em></p>
+
+<h3 id="section">编译模板简单示例</h3>
+
+<p>使用 <a href="https://twig.symfony.com/">Twig</a> 类库。</p>
+
+<div class="highlight"><pre><code class="language-html-jinja" data-lang="html+jinja">{% include 'header.html' with {'title': 'User Profile'} %}
+
+&lt;h1&gt;User Profile&lt;/h1&gt;
+&lt;p&gt;Hello, {{ name }}&lt;/p&gt;
+
+{% include 'footer.html' %}</code></pre></div>
+
+<h3 id="section-1">编译模板使用继承示例</h3>
+
+<p>使用 <a href="https://twig.symfony.com/">Twig</a> 类库。</p>
+
+<div class="highlight"><pre><code class="language-html-jinja" data-lang="html+jinja">// template.html
+
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;{% block title %}{% endblock %}&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;main&gt;
+    {% block content %}{% endblock %}
+&lt;/main&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre></div>
+
+<div class="highlight"><pre><code class="language-html-jinja" data-lang="html+jinja">// user_profile.html
+
+{% extends "template.html" %}
+
+{% block title %}User Profile{% endblock %}
+{% block content %}
+    &lt;h1&gt;User Profile&lt;/h1&gt;
+    &lt;p&gt;Hello, {{ name }}&lt;/p&gt;
+{% endblock %}</code></pre></div>
+

@@ -1,0 +1,74 @@
+<h2 id="databases_interacting_title">数据库交互</h2>
+
+<p>当开发者第一次接触 PHP 时，通常会使用类似下面的代码来将数据库的交互与表示层逻辑混在一起：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="nt">&lt;ul&gt;</span>
+<span class="cp">&lt;?php</span>
+<span class="k">foreach</span> <span class="p">(</span><span class="nv">$db</span><span class="o">-&gt;</span><span class="na">query</span><span class="p">(</span><span class="s1">'SELECT * FROM table'</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$row</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="s2">"&lt;li&gt;"</span><span class="o">.</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'field1'</span><span class="p">]</span><span class="o">.</span><span class="s2">" - "</span><span class="o">.</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'field1'</span><span class="p">]</span><span class="o">.</span><span class="s2">"&lt;/li&gt;"</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="cp">?&gt;</span>
+<span class="nt">&lt;/ul&gt;</span></code></pre></div>
+
+<p>这从很多方面来看都是错误的做法，主要是由于它不易阅读又难以测试和调试。而且如果你不加以限制的话，它会输出非常多的字段。</p>
+
+<p>其实还有许多不同的解决方案来完成这项工作 — 取决于你倾向于 <a href="/#object-oriented-programming">面向对象编程（OOP）</a>还是<a href="/#functional-programming">函数式编程</a> — 但必须有一些分离的元素。</p>
+
+<p>来看一下最基本的做法：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">function</span> <span class="nf">getAllFoos</span><span class="p">(</span><span class="nv">$db</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nv">$db</span><span class="o">-&gt;</span><span class="na">query</span><span class="p">(</span><span class="s1">'SELECT * FROM table'</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">foreach</span> <span class="p">(</span><span class="nx">getAllFoos</span><span class="p">(</span><span class="nv">$db</span><span class="p">)</span> <span class="k">as</span> <span class="nv">$row</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="s2">"&lt;li&gt;"</span><span class="o">.</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'field1'</span><span class="p">]</span><span class="o">.</span><span class="s2">" - "</span><span class="o">.</span><span class="nv">$row</span><span class="p">[</span><span class="s1">'field1'</span><span class="p">]</span><span class="o">.</span><span class="s2">"&lt;/li&gt;"</span><span class="p">;</span> <span class="c1">// BAD!!</span>
+<span class="p">}</span></code></pre></div>
+
+<p>这是一个不错的开头。将这两个元素放入了两个不同的文件于是你得到了一些干净的分离。</p>
+
+<p>创建一个类来放置上面的函数，你就得到了一个「Model」。创建一个简单的<code>.php</code>文件来存放表示逻辑，你就得到了一个「View」。这已经很接近 <a href="https://code.tutsplus.com/tutorials/mvc-for-noobs--net-10488">MVC</a> — 一个大多数<a href="/#frameworks">框架</a>常用的面向对象的架构。</p>
+
+<p><strong>foo.php</strong></p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="nv">$db</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PDO</span><span class="p">(</span><span class="s1">'mysql:host=localhost;dbname=testdb;charset=utf8'</span><span class="p">,</span> <span class="s1">'username'</span><span class="p">,</span> <span class="s1">'password'</span><span class="p">);</span>
+
+<span class="c1">// Make your model available</span>
+<span class="k">include</span> <span class="s1">'models/FooModel.php'</span><span class="p">;</span>
+
+<span class="c1">// Create an instance</span>
+<span class="nv">$fooModel</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">FooModel</span><span class="p">(</span><span class="nv">$db</span><span class="p">);</span>
+<span class="c1">// Get the list of Foos</span>
+<span class="nv">$fooList</span> <span class="o">=</span> <span class="nv">$fooModel</span><span class="o">-&gt;</span><span class="na">getAllFoos</span><span class="p">();</span>
+
+<span class="c1">// Show the view</span>
+<span class="k">include</span> <span class="s1">'views/foo-list.php'</span><span class="p">;</span></code></pre></div>
+
+<p><strong>models/FooModel.php</strong></p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">class</span> <span class="nc">FooModel</span>
+<span class="p">{</span>
+    <span class="k">protected</span> <span class="nv">$db</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nx">PDO</span> <span class="nv">$db</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">db</span> <span class="o">=</span> <span class="nv">$db</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getAllFoos</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">db</span><span class="o">-&gt;</span><span class="na">query</span><span class="p">(</span><span class="s1">'SELECT * FROM table'</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p><strong>views/foo-list.php</strong></p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span> <span class="k">foreach</span> <span class="p">(</span><span class="nv">$fooList</span> <span class="k">as</span> <span class="nv">$row</span><span class="p">)</span><span class="o">:</span> <span class="cp">?&gt;</span>
+    <span class="cp">&lt;?=</span> <span class="nv">$row</span><span class="p">[</span><span class="s1">'field1'</span><span class="p">]</span> <span class="cp">?&gt;</span> - <span class="cp">&lt;?=</span> <span class="nv">$row</span><span class="p">[</span><span class="s1">'field1'</span><span class="p">]</span> <span class="cp">?&gt;</span>
+<span class="cp">&lt;?php</span> <span class="k">endforeach</span> <span class="cp">?&gt;</span></code></pre></div>
+
+<p>向大多数现代框架的做法学习是很有必要的，尽管多了一些手动的工作。你可以并不需要每一次都完全这么做，但将太多的表示逻辑层代码和数据库交互掺杂在一些将会为你在想要对程序进行<a href="/#unit-testing">单元测试</a>时带来真正的麻烦。</p>
+
+<p><a href="https://phpbridge.org/docs/">PHPBridge</a> 具有一项非常棒的资源叫做<a href="https://phpbridge.org/intro-to-php/creating_a_data_class">创建一个数据类</a>。它包含了非常相似的逻辑而且非常适合刚刚习惯数据库交互概念的开发者使用。</p>
+

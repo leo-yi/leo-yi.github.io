@@ -1,0 +1,139 @@
+<h2 id="php_and_utf8_title">使用 UTF-8 编码</h2>
+
+<p><em>本章是由 <a href="https://alexcabal.com/">Alex Cabal</a> 最初撰写在 <a href="https://phpbestpractices.org/#utf-8">PHP Best Practices</a> 中的，我们使用它作为进行建议的基础</em>。</p>
+
+<h3 id="section">这不是在开玩笑。请小心、仔细并且前后一致地处理它。</h3>
+
+<p>目前，PHP 仍未在底层实现对 Unicode 的支持。虽然有很多途径可以确保 UTF-8 字符串能够被正确地处理，但这并不是很简单的事情，通常需要对 Web 应用进行全方面的检查，从 HTML 到 SQL 再到 PHP。我们将争取进行一个简洁实用的总结。</p>
+
+<h3 id="php--utf-8">PHP 层面的 UTF-8</h3>
+
+<p>最基本的字符串操作，像是连结两个字符串或将字符串赋值给变量，并不需要对 UTF-8 做特别的处理。然而大多数字符串的函数，像 <code>strpos()</code> 和 <code>strlen()</code>，确实需要特别的处理。这些函数名中通常包含 <code>mb_*</code>：比如，<code>mb_strpos()</code> 和 <code>mb_strlen()</code>。这些 <code>mb_*</code> 字符串是由 <a href="https://php.net/book.mbstring">Multibyte String Extension</a> 提供支持的，它专门为操作 Unicode 字符串而特别进行了设计。</p>
+
+<p>在操作 Unicode 字符串时，请你务必使用 <code>mb_*</code> 函数。例如，如果你对一个 UTF-8 字符串使用 <code>substr()</code>，那返回的结果中有很大可能会包含一些乱码。正确的方式是使用 <code>mb_substr()</code>。</p>
+
+<p>最难的地方在于每次都要记得使用 <code>mb_*</code> 函数。如果你哪怕只有一次忘记了使用，你的 Unicode 字符串就有在接下来的过程中变成乱码的风险。</p>
+
+<p>不是所有的字符串函数都有一个对应的 <code>mb_*</code> 函数。如果你想要的功能没有对应的 <code>mb_*</code> 函数的话，那只能说你运气不佳了。</p>
+
+<p>你应该在你所有的 PHP 脚本（或全局包含的脚本）的开头使用 <code>mb_internal_encoding()</code> 函数，然后紧接着在会对浏览器进行输出的脚本中使用 <code>mb_http_output()</code>。在每一个脚本当中明确声明字符串的编码可以免去很多日后的烦恼。</p>
+
+<p>另外，许多对字符串进行操作的函数都有一个可选的参数用来指定字符串编码。当可以设定这类参数时，你应该始终明确指定使用 UTF-8。例如，<code>htmlentities()</code> 有一个字符编码的选项，你应该始终将其设为 UTF-8。从 PHP 5.4.0 开始, <code>htmlentities()</code> 和 <code>htmlspecialchars()</code> 的编码都已经被默认设为了 UTF-8。</p>
+
+<p>最后，如果你所编写的是分布式的应用程序并且不能确定 <code>mbstring</code> 扩展一定开启的话，可以考虑使用 <a href="https://packagist.org/packages/patchwork/utf8">patchwork/utf8</a> Composer 包。它会在 <code>mbstring</code> 可用时自动使用，否则自动切换回非 UTF-8 函数。</p>
+
+<h3 id="utf-8">数据库层面的 UTF-8</h3>
+
+<p>如果你使用 PHP 来操作到 MySQL，有些时候即使你做到了上面的每一点，你的字符串仍可能面临在数据库中以非 UTF-8 的格式进行存储的问题。</p>
+
+<p>为了确保你的字符串从 PHP 到 MySQL都使用 UTF-8，请检查确认你的数据库和数据表都设定为 <code>utf8mb4</code> 字符集和整理，并且确保你的 PDO 连接请求也使用了 <code>utf8mb4</code> 字符集。请看下方的示例代码，这是 <em>非常重要</em> 的。</p>
+
+<p>请注意为了完整的 UTF-8 支持，你必须使用 <code>utf8mb4</code> 而不是  <code>utf8</code>！你会在进一步阅读中找到原因。</p>
+
+<h3 id="utf-8-1">浏览器层面的 UTF-8</h3>
+
+<p>使用 <code>mb_http_output()</code> 函数来确保 PHP 向浏览器输出 UTF-8 格式的字符串。</p>
+
+<p>随后浏览器需要接收 HTTP 应答来指定页面是由 UTF-8 进行编码的。以前这一步是通过在页面 <code>&lt;head&gt;</code> 标签下包含<a href="https://htmlpurifier.org/docs/enduser-utf8.html">字符集 <code>&lt;meta&gt;</code> 标签</a>实现的，这是一种可行的方式。但更好的做法是在 <code>Content-Type</code> 响应头中进行设置，因为这样做的速度会<a href="https://developers.google.com/speed/docs/best-practices/rendering#SpecifyCharsetEarly">更快</a>。</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="c1">// Tell PHP that we're using UTF-8 strings until the end of the script</span>
+<span class="nb">mb_internal_encoding</span><span class="p">(</span><span class="s1">'UTF-8'</span><span class="p">);</span>
+<span class="nv">$utf_set</span> <span class="o">=</span> <span class="nb">ini_set</span><span class="p">(</span><span class="s1">'default_charset'</span><span class="p">,</span> <span class="s1">'utf-8'</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nv">$utf_set</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nx">Exception</span><span class="p">(</span><span class="s1">'could not set default_charset to utf-8, please ensure it\'s set on your system!'</span><span class="p">);</span>
+<span class="p">}</span>
+
+ 
+<span class="c1">// Tell PHP that we'll be outputting UTF-8 to the browser</span>
+<span class="nb">mb_http_output</span><span class="p">(</span><span class="s1">'UTF-8'</span><span class="p">);</span>
+ 
+<span class="c1">// Our UTF-8 test string</span>
+<span class="nv">$string</span> <span class="o">=</span> <span class="s1">'Êl síla erin lû e-govaned vîn.'</span><span class="p">;</span>
+ 
+<span class="c1">// Transform the string in some way with a multibyte function</span>
+<span class="c1">// Note how we cut the string at a non-Ascii character for demonstration purposes</span>
+<span class="nv">$string</span> <span class="o">=</span> <span class="nb">mb_substr</span><span class="p">(</span><span class="nv">$string</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">);</span>
+ 
+<span class="c1">// Connect to a database to store the transformed string</span>
+<span class="c1">// See the PDO example in this document for more information</span>
+<span class="c1">// Note the `charset=utf8mb4` in the Data Source Name (DSN)</span>
+<span class="nv">$link</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">PDO</span><span class="p">(</span>
+    <span class="s1">'mysql:host=your-hostname;dbname=your-db;charset=utf8mb4'</span><span class="p">,</span>
+    <span class="s1">'your-username'</span><span class="p">,</span>
+    <span class="s1">'your-password'</span><span class="p">,</span>
+    <span class="k">array</span><span class="p">(</span>
+        <span class="nx">PDO</span><span class="o">::</span><span class="na">ATTR_ERRMODE</span> <span class="o">=&gt;</span> <span class="nx">PDO</span><span class="o">::</span><span class="na">ERRMODE_EXCEPTION</span><span class="p">,</span>
+        <span class="nx">PDO</span><span class="o">::</span><span class="na">ATTR_PERSISTENT</span> <span class="o">=&gt;</span> <span class="kc">false</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+ 
+<span class="c1">// Store our transformed string as UTF-8 in our database</span>
+<span class="c1">// Your DB and tables are in the utf8mb4 character set and collation, right?</span>
+<span class="nv">$handle</span> <span class="o">=</span> <span class="nv">$link</span><span class="o">-&gt;</span><span class="na">prepare</span><span class="p">(</span><span class="s1">'insert into ElvishSentences (Id, Body, Priority) values (default, :body, :priority)'</span><span class="p">);</span>
+<span class="nv">$handle</span><span class="o">-&gt;</span><span class="na">bindParam</span><span class="p">(</span><span class="s1">':body'</span><span class="p">,</span> <span class="nv">$string</span><span class="p">,</span> <span class="nx">PDO</span><span class="o">::</span><span class="na">PARAM_STR</span><span class="p">);</span>
+<span class="nv">$priority</span> <span class="o">=</span> <span class="mi">45</span><span class="p">;</span>
+<span class="nv">$handle</span><span class="o">-&gt;</span><span class="na">bindParam</span><span class="p">(</span><span class="s1">':priority'</span><span class="p">,</span> <span class="nv">$priority</span><span class="p">,</span> <span class="nx">PDO</span><span class="o">::</span><span class="na">PARAM_INT</span><span class="p">);</span> <span class="c1">// explicitly tell pdo to expect an int</span>
+<span class="nv">$handle</span><span class="o">-&gt;</span><span class="na">execute</span><span class="p">();</span>
+ 
+<span class="c1">// Retrieve the string we just stored to prove it was stored correctly</span>
+<span class="nv">$handle</span> <span class="o">=</span> <span class="nv">$link</span><span class="o">-&gt;</span><span class="na">prepare</span><span class="p">(</span><span class="s1">'select * from ElvishSentences where Id = :id'</span><span class="p">);</span>
+<span class="nv">$id</span> <span class="o">=</span> <span class="mi">7</span><span class="p">;</span>
+<span class="nv">$handle</span><span class="o">-&gt;</span><span class="na">bindParam</span><span class="p">(</span><span class="s1">':id'</span><span class="p">,</span> <span class="nv">$id</span><span class="p">,</span> <span class="nx">PDO</span><span class="o">::</span><span class="na">PARAM_INT</span><span class="p">);</span>
+<span class="nv">$handle</span><span class="o">-&gt;</span><span class="na">execute</span><span class="p">();</span>
+ 
+<span class="c1">// Store the result into an object that we'll output later in our HTML</span>
+<span class="c1">// This object won't kill your memory because it fetches the data Just-In-Time to</span>
+<span class="nv">$result</span> <span class="o">=</span> <span class="nv">$handle</span><span class="o">-&gt;</span><span class="na">fetchAll</span><span class="p">(</span><span class="nx">\PDO</span><span class="o">::</span><span class="na">FETCH_OBJ</span><span class="p">);</span>
+
+<span class="c1">// An example wrapper to allow you to escape data to html</span>
+<span class="k">function</span> <span class="nf">escape_to_html</span><span class="p">(</span><span class="nv">$dirty</span><span class="p">){</span>
+    <span class="k">echo</span> <span class="nb">htmlspecialchars</span><span class="p">(</span><span class="nv">$dirty</span><span class="p">,</span> <span class="nx">ENT_QUOTES</span><span class="p">,</span> <span class="s1">'UTF-8'</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nb">header</span><span class="p">(</span><span class="s1">'Content-Type: text/html; charset=UTF-8'</span><span class="p">);</span> <span class="c1">// Unnecessary if your default_charset is set to utf-8 already</span>
+<span class="cp">?&gt;&lt;!doctype html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+    <span class="nt">&lt;head&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;title&gt;</span>UTF-8 test page<span class="nt">&lt;/title&gt;</span>
+    <span class="nt">&lt;/head&gt;</span>
+    <span class="nt">&lt;body&gt;</span>
+        <span class="cp">&lt;?php</span>
+        <span class="k">foreach</span><span class="p">(</span><span class="nv">$result</span> <span class="k">as</span> <span class="nv">$row</span><span class="p">){</span>
+            <span class="nx">escape_to_html</span><span class="p">(</span><span class="nv">$row</span><span class="o">-&gt;</span><span class="na">Body</span><span class="p">);</span>  <span class="c1">// This should correctly output our transformed UTF-8 string to the browser</span>
+        <span class="p">}</span>
+        <span class="cp">?&gt;</span>
+    <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span></code></pre></div>
+
+<h3 id="further-reading">Further reading</h3>
+
+<ul>
+  <li><a href="https://php.net/language.operators.string">PHP 手册：字符串运算符</a></li>
+  <li><a href="https://php.net/ref.strings">PHP 手册：字符串函数</a>
+    <ul>
+      <li><a href="https://php.net/function.strpos"><code>strpos()</code></a></li>
+      <li><a href="https://php.net/function.strlen"><code>strlen()</code></a></li>
+      <li><a href="https://php.net/function.substr"><code>substr()</code></a></li>
+    </ul>
+  </li>
+  <li><a href="https://php.net/ref.mbstring">PHP 手册：多字节字符串函数</a>
+    <ul>
+      <li><a href="https://php.net/function.mb-strpos"><code>mb_strpos()</code></a></li>
+      <li><a href="https://php.net/function.mb-strlen"><code>mb_strlen()</code></a></li>
+      <li><a href="https://php.net/function.mb-substr"><code>mb_substr()</code></a></li>
+      <li><a href="https://php.net/function.mb-internal-encoding"><code>mb_internal_encoding()</code></a></li>
+      <li><a href="https://php.net/function.mb-http-output"><code>mb_http_output()</code></a></li>
+      <li><a href="https://php.net/function.htmlentities"><code>htmlentities()</code></a></li>
+      <li><a href="https://php.net/function.htmlspecialchars"><code>htmlspecialchars()</code></a></li>
+    </ul>
+  </li>
+  <li><a href="https://blog.loftdigital.com/blog/php-utf-8-cheatsheet">PHP UTF-8 Cheatsheet</a></li>
+  <li><a href="https://www.phpwact.org/php/i18n/utf-8">Handling UTF-8 with PHP</a></li>
+  <li><a href="https://stackoverflow.com/questions/571694/what-factors-make-php-unicode-incompatible">Stack Overflow: What factors make PHP Unicode-incompatible?</a></li>
+  <li><a href="https://stackoverflow.com/questions/140728/best-practices-in-php-and-mysql-with-international-strings">Stack Overflow: Best practices in PHP and MySQL with international strings</a></li>
+  <li><a href="https://mathiasbynens.be/notes/mysql-utf8mb4">How to support full Unicode in MySQL databases</a></li>
+  <li><a href="https://www.sitepoint.com/bringing-unicode-to-php-with-portable-utf8/">Bringing Unicode to PHP with Portable UTF-8</a></li>
+  <li><a href="https://stackoverflow.com/questions/8218230/php-domdocument-loadhtml-not-encoding-utf-8-correctly">Stack Overflow: DOMDocument loadHTML does not encode UTF-8 correctly</a></li>
+</ul>

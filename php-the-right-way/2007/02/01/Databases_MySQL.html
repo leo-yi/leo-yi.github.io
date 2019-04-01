@@ -1,0 +1,24 @@
+<h2 id="mysql_extension_title">MySQL 扩展</h2>
+
+<p><a href="https://secure.php.net/mysqli">mysql</a> 非常古老，并且已经被以下两个扩展取代：</p>
+
+<ul>
+  <li><a href="https://secure.php.net/mysqli">mysqli</a></li>
+  <li><a href="https://secure.php.net/pdo">pdo</a></li>
+</ul>
+
+<p>PHP 中的 <a href="https://secure.php.net/mysqli">mysql</a> 扩展已经不再进行新的开发了，<a href="https://secure.php.net/migration55.deprecated">在 PHP 5.5.0 版本中正式标记为废弃</a>，并在 <strong><a href="https://secure.php.net/manual/migration70.removed-exts-sapis.php">7.0 正式被移除</a></strong> 。</p>
+
+<p>想要辨别 <code>mysql</code> 是否被使用，你不需要到 <code>php.ini</code> 去查看。只需要使用编辑器打开你的项目，然后全局搜索 <code>mysql_*</code>
+，如果有类似 <code>mysql_connect()</code> 或者 <code>mysql_query()</code> 方法出现，那么你就使用了 <code>mysql</code>。</p>
+
+<p>如果因为特别原因还未考虑升级到 PHP 7.x 的话，可以考虑使用 <a href="https://secure.php.net/mysqli">mysqli</a> 或者 <a href="https://secure.php.net/pdo">PDO</a> 来临时解决问题。</p>
+
+<p><strong>如果你是从 <a href="https://secure.php.net/mysqli">mysql</a> 升级到 <a href="https://secure.php.net/mysqli">mysqli</a>，请尽量不要使用全局替换 <code>mysql_*</code> 为 <code>mysqli_*</code>。你会错过 mysqli 提供的一些优秀特性，如数据参数绑定，此功能能有效的防止 SQL 注入攻击。<a href="https://secure.php.net/pdo">PDO</a> 也提供此功能。</strong></p>
+
+<ul>
+  <li><a href="https://websitebeaver.com/prepared-statements-in-php-mysqli-to-prevent-sql-injection">MySQLi Prepared Statements</a></li>
+  <li><a href="https://secure.php.net/mysqlinfo.api.choosing">PHP: Choosing an API for MySQL</a></li>
+  <li><a href="http://wiki.hashphp.org/PDO_Tutorial_for_MySQL_Developers">PDO Tutorial for MySQL Developers</a></li>
+</ul>
+

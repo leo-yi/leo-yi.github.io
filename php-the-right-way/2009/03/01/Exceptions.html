@@ -1,0 +1,49 @@
+<h2 id="exceptions_title">异常</h2>
+
+<p>异常是许多流行编程语言的标配，但它们往往被 PHP 开发人员所忽视。像 Ruby 就是一个极度重视异常的语言，无论有什么错误发生，像是 HTTP 请求失败，或者数据库查询有问题，甚至找不到一个图片资源，Ruby （或是所使用的 gems），将会抛出异常，你可以通过屏幕立刻知道所发生的问题。</p>
+
+<p>PHP 处理这个问题则比较随意，调用 <code>file_get_contents()</code> 函数通常只会给出 <code>FALSE</code> 值和警告。许多较早的 PHP 框架比如 CodeIgniter 只是返回 false，将信息写入专有的日志，或者让你使用类似 <code>$this-&gt;upload-&gt;get_error()</code> 的方法来查看错误原因。这里的问题在于你必须找出错误所在，并且通过翻阅文档来查看这个类使用了什么样的错误的方法，而不是明确的暴露错误。</p>
+
+<p>另一个问题发生在当类自动抛出错误到屏幕时会结束程序。这样做会阻挡其他开发者动态处理错误的机会。应该抛出异常让开发人员意识到错误的存在，让他们可以选择处理的方式，例如：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="nv">$email</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Fuel\Email</span><span class="p">;</span>
+<span class="nv">$email</span><span class="o">-&gt;</span><span class="na">subject</span><span class="p">(</span><span class="s1">'My Subject'</span><span class="p">);</span>
+<span class="nv">$email</span><span class="o">-&gt;</span><span class="na">body</span><span class="p">(</span><span class="s1">'How the heck are you?'</span><span class="p">);</span>
+<span class="nv">$email</span><span class="o">-&gt;</span><span class="na">to</span><span class="p">(</span><span class="s1">'guy@example.com'</span><span class="p">,</span> <span class="s1">'Some Guy'</span><span class="p">);</span>
+
+<span class="k">try</span>
+<span class="p">{</span>
+    <span class="nv">$email</span><span class="o">-&gt;</span><span class="na">send</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="k">catch</span><span class="p">(</span><span class="nx">Fuel\Email\ValidationFailedException</span> <span class="nv">$e</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// 验证失败</span>
+<span class="p">}</span>
+<span class="k">catch</span><span class="p">(</span><span class="nx">Fuel\Email\SendingFailedException</span> <span class="nv">$e</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// 这个驱动无法发送 email</span>
+<span class="p">}</span>
+<span class="nx">finally</span>
+<span class="p">{</span>
+    <span class="c1">// 无论抛出什么样的异常都会执行，并且在正常程序继续之前执行</span>
+<span class="p">}</span></code></pre></div>
+
+<h3 id="spl-">SPL 异常</h3>
+
+<p>原生的 <code>Exception</code> 类并没有提供太多的调试情境给开发人员，不过可以通过建立一个特殊的 <code>Exception</code> 来弥补它，方式就是建立一个继承自原生 <code>Exception</code> 类的一个子类：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">class</span> <span class="nc">ValidationException</span> <span class="k">extends</span> <span class="nx">Exception</span> <span class="p">{}</span></code></pre></div>
+
+<p>如此一来，可以加入多个 catch 区块，并且根据不同的异常分别处理。通过这样可以建立 <em>许多</em>自定义异常，其中有些已经在 <a href="/#standard_php_library">SPL 扩展</a> 提供的 SPL 异常中定义了。</p>
+
+<p>举例来说，如果你使用了 <code>__call()</code> 魔术方法去调用一个无效的方法，而不是抛出一个模糊的标准 Exception 或是建立自定义的异常处理，你可以直接抛出 <code>throw new BadMethodCallException;</code>。</p>
+
+<ul>
+  <li><a href="https://secure.php.net/language.exceptions">Read about Exceptions</a></li>
+  <li><a href="https://secure.php.net/spl.exceptions">Read about SPL Exceptions</a></li>
+  <li><a href="https://www.brandonsavage.net/exceptional-php-nesting-exceptions-in-php/">Nesting Exceptions In PHP</a></li>
+  <li><a href="http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3">Exception Best Practices in PHP 5.3</a></li>
+</ul>
+

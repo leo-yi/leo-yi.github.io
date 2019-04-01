@@ -1,0 +1,48 @@
+<h2 id="date_and_time_title">日期和时间</h2>
+
+<p>PHP 中 DateTime 类的作用是在你读、写、比较或者计算日期和时间时提供帮助。除了 DateTime 类之外，PHP 还有很多与日期和时间相关的函数，但 DateTime 类为大多数常规使用提供了优秀的面向对象接口。它还可以处理时区，不过这并不在这篇简短的介绍之内。</p>
+
+<p>在使用 DateTime 之前，通过 <code>createFromFormat()</code> 工厂方法将原始的日期与时间字符串转换为对象或使用 <code>new DateTime</code> 来取得当前的日期和时间。使用 <code>format()</code> 将 DateTime 转换回字符串用于输出。</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="nv">$raw</span> <span class="o">=</span> <span class="s1">'22. 11. 1968'</span><span class="p">;</span>
+<span class="nv">$start</span> <span class="o">=</span> <span class="nx">DateTime</span><span class="o">::</span><span class="na">createFromFormat</span><span class="p">(</span><span class="s1">'d. m. Y'</span><span class="p">,</span> <span class="nv">$raw</span><span class="p">);</span>
+
+<span class="k">echo</span> <span class="s1">'Start date: '</span> <span class="o">.</span> <span class="nv">$start</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">'Y-m-d'</span><span class="p">)</span> <span class="o">.</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span></code></pre></div>
+
+<p>对 DateTime 进行计算时可以使用 DateInterval 类。DateTime 类具有例如 <code>add()</code> 和 <code>sub()</code> 等将 DateInterval 当作参数的方法。编写代码时注意不要认为每一天都是由相同的秒数构成的，不论是夏令时（DST）还是时区转换，使用时间戳计算都会遇到问题，应当选择日期间隔。使用 <code>diff()</code> 方法来计算日期之间的间隔，它会返回新的 DateInterval，非常容易进行展示。</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="c1">// create a copy of $start and add one month and 6 days</span>
+<span class="nv">$end</span> <span class="o">=</span> <span class="k">clone</span> <span class="nv">$start</span><span class="p">;</span>
+<span class="nv">$end</span><span class="o">-&gt;</span><span class="na">add</span><span class="p">(</span><span class="k">new</span> <span class="nx">DateInterval</span><span class="p">(</span><span class="s1">'P1M6D'</span><span class="p">));</span>
+
+<span class="nv">$diff</span> <span class="o">=</span> <span class="nv">$end</span><span class="o">-&gt;</span><span class="na">diff</span><span class="p">(</span><span class="nv">$start</span><span class="p">);</span>
+<span class="k">echo</span> <span class="s1">'Difference: '</span> <span class="o">.</span> <span class="nv">$diff</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">'%m month, %d days (total: %a days)'</span><span class="p">)</span> <span class="o">.</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+<span class="c1">// Difference: 1 month, 6 days (total: 37 days)</span></code></pre></div>
+
+<p>DateTime 对象之间可以直接进行比较：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$start</span> <span class="o">&lt;</span> <span class="nv">$end</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="s2">"Start is before end!</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+<p>最后一个例子来演示 DatePeriod 类。它用来对循环的事件进行迭代。向它传入开始时间、结束时间和间隔区间，会得到这其中所有的事件。</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="c1">// output all thursdays between $start and $end</span>
+<span class="nv">$periodInterval</span> <span class="o">=</span> <span class="nx">DateInterval</span><span class="o">::</span><span class="na">createFromDateString</span><span class="p">(</span><span class="s1">'first thursday'</span><span class="p">);</span>
+<span class="nv">$periodIterator</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">DatePeriod</span><span class="p">(</span><span class="nv">$start</span><span class="p">,</span> <span class="nv">$periodInterval</span><span class="p">,</span> <span class="nv">$end</span><span class="p">,</span> <span class="nx">DatePeriod</span><span class="o">::</span><span class="na">EXCLUDE_START_DATE</span><span class="p">);</span>
+<span class="k">foreach</span> <span class="p">(</span><span class="nv">$periodIterator</span> <span class="k">as</span> <span class="nv">$date</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// output each date in the period</span>
+    <span class="k">echo</span> <span class="nv">$date</span><span class="o">-&gt;</span><span class="na">format</span><span class="p">(</span><span class="s1">'Y-m-d'</span><span class="p">)</span> <span class="o">.</span> <span class="s1">' '</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+<p>一个有名的 API 扩展是 <a href="https://carbon.nesbot.com">Carbon</a>。Carbon 不仅继承了所有 DateTime 类提供的功能，还提供了更多的人性化功能，例如自然语言时间处理、国际化支持、对象之间执行增减算术。</p>
+
+<ul>
+  <li><a href="https://php.net/book.datetime">阅读 DateTime</a></li>
+  <li><a href="https://php.net/function.date">阅读日期格式</a> (支持的日期字符串格式)</li>
+</ul>
+

@@ -1,0 +1,404 @@
+<h2 id="i18n_l10n_title">国际化（i18n）和本地化（l10n）</h2>
+
+<p>_前置声明：i18n 和 l10n 是使用数字简略拼写方式来实现缩写，在我们的例子里：internationalization 是 i18n，而 localization 简写为 l10n。</p>
+
+<p>首先，我们需要定义这两个相似的概念，还有相关的概念：</p>
+
+<ul>
+  <li><strong>Internationalization</strong> 国际化：指的是一开始设计一个支持多语言的架构。很多时候这个事情只需要做一次，并且是在项目初始时，不然的话，你可能面临一个项目的重大修改。</li>
+  <li><strong>Localization</strong> 本地化：指的是新语言的添加。基于 i18n 的架构设计，在每一次新支持一门语言时，我们都需要一点点的去增加翻译的语言。</li>
+  <li><strong>Pluralization</strong> 复数形式：不同语言复数规则不一样，即使是相同语言里也会出现不同复数规则，例如大部分英文名词后面加 <code>s 为复数，有一些单词如 </code>knowledge` 就没有复数形式。俄语和塞尔威亚语有两种复数的形式，甚至有一些语言，如斯洛维尼亚语、爱尔兰语和阿拉伯语会存在 4、5 或者是 6 种复数形式。</li>
+</ul>
+
+<h2 id="section">一般实现的方法</h2>
+
+<p>最简便的方式是使用数组键值对应的方式如 <code>&lt;h1&gt;&lt;?=$TRANS['title_about_page']?&gt;&lt;/h1&gt;</code>，不过在比较正经的项目中，不建议这么做。因为会随着项目代码慢慢变多，维护的难度将会增加，尤其会阻碍后续本地化实施。</p>
+
+<p>The most classic way and often taken as reference for i18n and l10n is a <a href="https://en.wikipedia.org/wiki/Gettext">Unix tool called <code>gettext</code></a>. It dates
+back to 1995 and is still a complete implementation for translating software. It is easy enough to get running, while
+still sporting powerful supporting tools. It is about Gettext we will be talking here. Also, to help you not get messy
+over the command-line, we will be presenting a great GUI application that can be used to easily update your l10n source</p>
+
+<h3 id="other-tools">Other tools</h3>
+
+<p>There are common libraries used that support Gettext and other implementations of i18n. Some of them may seem easier to
+install or sport additional features or i18n file formats. In this document, we focus on the tools provided with the
+PHP core, but here we list others for completion:</p>
+
+<ul>
+  <li>[aura/intl][aura-intl]: Provides internationalization (I18N) tools, specifically package-oriented per-locale message
+translation. It uses array formats for message. Does not provide a message extractor, but does provide advanced
+message formatting via the <code>intl</code> extension (including pluralized messages).</li>
+  <li><a href="https://github.com/oscarotero/Gettext">oscarotero/Gettext</a>: Gettext support with an OO interface; includes improved helper functions, powerful
+extractors for several file formats (some of them not supported natively by the <code>gettext</code> command), and can also export
+to other formats besides <code>.mo/.po</code> files. Can be useful if you need to integrate your translation files into other
+parts of the system, like a JavaScript interface.</li>
+  <li><a href="https://symfony.com/doc/current/components/translation.html">symfony/translation</a>: supports a lot of different formats, but recommends using verbose XLIFF’s. Doesn’t
+include helper functions nor a built-in extractor, but supports placeholders using <code>strtr()</code> internally.</li>
+  <li><a href="https://docs.zendframework.com/zend-i18n/translation">zend/i18n</a>: supports array and INI files, or Gettext formats. Implements a caching layer to save you from
+reading the filesystem every time. It also includes view helpers, and locale-aware input filters and validators.
+However, it has no message extractor.</li>
+</ul>
+
+<p>Other frameworks also include i18n modules, but those are not available outside of their codebases:</p>
+
+<ul>
+  <li><a href="https://laravel.com/docs/master/localization">Laravel</a> supports basic array files, has no automatic extractor but includes a <code>@lang</code> helper for template files.</li>
+  <li><a href="https://www.yiiframework.com/doc-2.0/guide-tutorial-i18n.html">Yii</a> supports array, Gettext, and database-based translation, and includes a messages extractor. It is backed by the
+<a href="https://br2.php.net/manual/en/intro.intl.php"><code>Intl</code></a> extension, available since PHP 5.3, and based on the <a href="https://www.icu-project.org">ICU project</a>; this enables Yii to run powerful
+replacements, like spelling out numbers, formatting dates, times, intervals, currency, and ordinals.</li>
+</ul>
+
+<p>If you decide to go for one of the libraries that provide no extractors, you may want to use the gettext formats, so
+you can use the original gettext toolchain (including Poedit) as described in the rest of the chapter.</p>
+
+<h2 id="gettext">Gettext</h2>
+
+<h3 id="installation">Installation</h3>
+<p>You might need to install Gettext and the related PHP library by using your package manager, like <code>apt-get</code> or <code>yum</code>.
+After installed, enable it by adding <code>extension=gettext.so</code> (Linux/Unix) or <code>extension=php_gettext.dll</code> (Windows) to
+your <code>php.ini</code>.</p>
+
+<p>Here we will also be using <a href="https://poedit.net">Poedit</a> to create translation files. You will probably find it in your system’s package
+manager; it is available for Unix, Mac, and Windows, and can be <a href="https://poedit.net/download">downloaded for free on their website</a>
+as well.</p>
+
+<h3 id="structure">Structure</h3>
+
+<h4 id="types-of-files">Types of files</h4>
+<p>There are three files you usually deal with while working with gettext. The main ones are PO (Portable Object) and
+MO (Machine Object) files, the first being a list of readable “translated objects” and the second, the corresponding
+binary to be interpreted by gettext when doing localization. There’s also a POT (Template) file, which simply contains
+all existing keys from your source files, and can be used as a guide to generate and update all PO files. Those template
+files are not mandatory: depending on the tool you are using to do l10n, you can go just fine with only PO/MO files.
+You will always have one pair of PO/MO files per language and region, but only one POT per domain.</p>
+
+<h3 id="domains">Domains</h3>
+<p>There are some cases, in big projects, where you might need to separate translations when the same words convey 
+different meaning given a context. In those cases, you split them into different <em>domains</em>. They are, basically, named
+groups of POT/PO/MO files, where the filename is the said <em>translation domain</em>. Small and medium-sized projects usually,
+for simplicity, use only one domain; its name is arbitrary, but we will be using “main” for our code samples.
+In <a href="https://symfony.com/doc/current/components/translation.html">Symfony</a> projects, for example, domains are used to separate the translation for validation messages.</p>
+
+<h4 id="locale-code">Locale code</h4>
+<p>A locale is simply a code that identifies one version of a language. It is defined following the <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1</a> and 
+<a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2">ISO 3166-1 alpha-2</a> specs: two lower-case letters for the language, optionally followed by an underline and two
+upper-case letters identifying the country or regional code. For <a href="https://www.gnu.org/software/gettext/manual/gettext.html#Rare-Language-Codes">rare languages</a>, three letters are used.</p>
+
+<p>For some speakers, the country part may seem redundant. In fact, some languages have dialects in different
+countries, such as Austrian German (<code>de_AT</code>) or Brazilian Portuguese (<code>pt_BR</code>). The second part is used to distinguish
+between those dialects - when it is not present, it is taken as a “generic” or “hybrid” version of the language.</p>
+
+<h3 id="directory-structure">Directory structure</h3>
+<p>To use Gettext, we will need to adhere to a specific structure of folders. First, you will need to select an arbitrary
+root for your l10n files in your source repository. Inside it, you will have a folder for each needed locale, and a
+fixed <code>LC_MESSAGES</code> folder that will contain all your PO/MO pairs. Example:</p>
+
+<div class="highlight"><pre><code class="language-console" data-lang="console"><span class="gp">&lt;project root&gt;</span>
+<span class="go"> ├─ src/
+ ├─ templates/
+ └─ locales/
+    ├─ forum.pot
+    ├─ site.pot
+    ├─ de/
+    │  └─ LC_MESSAGES/
+    │     ├─ forum.mo
+    │     ├─ forum.po
+    │     ├─ site.mo
+    │     └─ site.po
+    ├─ es_ES/
+    │  └─ LC_MESSAGES/
+    │     └─ ...
+    ├─ fr/
+    │  └─ ...
+    ├─ pt_BR/
+    │  └─ ...
+    └─ pt_PT/
+       └─ ...</span></code></pre></div>
+
+<h3 id="plural-forms">Plural forms</h3>
+<p>As we said in the introduction, different languages might sport different plural rules. However, gettext saves us from
+this trouble once again. When creating a new <code>.po</code> file, you will have to declare the <a href="https://docs.translatehouse.org/projects/localization-guide/en/latest/l10n/pluralforms.html">plural rules</a> for that
+language, and translated pieces that are plural-sensitive will have a different form for each of those rules. When
+calling Gettext in code, you will have to specify the number related to the sentence, and it will work out the correct
+form to use - even using string substitution if needed.</p>
+
+<p>Plural rules include the number of plurals available and a boolean test with <code>n</code> that would define in which rule the
+given number falls (starting the count with 0). For example:</p>
+
+<ul>
+  <li>Japanese: <code>nplurals=1; plural=0</code> - only one rule</li>
+  <li>English: <code>nplurals=2; plural=(n != 1);</code> - two rules, first if N is one, second rule otherwise</li>
+  <li>Brazilian Portuguese: <code>nplurals=2; plural=(n &gt; 1);</code> - two rules, second if N is bigger than one, first otherwise</li>
+</ul>
+
+<p>Now that you understood the basis of how plural rules works - and if you didn’t, please look at a deeper explanation
+on the <a href="https://lingohub.com/blog/2013/07/php-internationalization-with-gettext-tutorial/#Plurals">LingoHub tutorial</a> -, you might want to copy the ones you need from a <a href="https://docs.translatehouse.org/projects/localization-guide/en/latest/l10n/pluralforms.html">list</a> instead
+of writing them by hand.</p>
+
+<p>When calling out Gettext to do localization on sentences with counters, you will have to give him the
+related number as well. Gettext will work out what rule should be in effect and use the correct localized version.
+You will need to include in the <code>.po</code> file a different sentence for each plural rule defined.</p>
+
+<h3 id="sample-implementation">Sample implementation</h3>
+<p>After all that theory, let’s get a little practical. Here’s an excerpt of a <code>.po</code> file - don’t mind with its format,
+but with the overall content instead; you will learn how to edit it easily later:</p>
+
+<div class="highlight"><pre><code class="language-po" data-lang="po">msgid ""
+msgstr ""
+"Language: pt_BR\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n &gt; 1);\n"
+
+msgid "We are now translating some strings"
+msgstr "Nós estamos traduzindo algumas strings agora"
+
+msgid "Hello %1$s! Your last visit was on %2$s"
+msgstr "Olá %1$s! Sua última visita foi em %2$s"
+
+msgid "Only one unread message"
+msgid_plural "%d unread messages"
+msgstr[0] "Só uma mensagem não lida"
+msgstr[1] "%d mensagens não lidas"</code></pre></div>
+
+<p>The first section works like a header, having the <code>msgid</code> and <code>msgstr</code> especially empty. It describes the file encoding,
+plural forms and other things that are less relevant.
+The second section translates a simple string from English to
+Brazilian Portuguese, and the third does the same, but leveraging string replacement from <a href="https://php.net/manual/en/function.sprintf.php"><code>sprintf</code></a> so the
+translation may contain the user name and visit date.
+The last section is a sample of pluralization forms, displaying
+the singular and plural version as <code>msgid</code> in English and their corresponding translations as <code>msgstr</code> 0 and 1
+(following the number given by the plural rule). There, string replacement is used as well so the number can be seen
+directly in the sentence, by using <code>%d</code>. The plural forms always have two <code>msgid</code> (singular and plural), so it is
+advised not to use a complex language as the source of translation.</p>
+
+<h3 id="discussion-on-l10n-keys">Discussion on l10n keys</h3>
+<p>As you might have noticed, we are using as source ID the actual sentence in English. That <code>msgid</code> is the same used
+throughout all your <code>.po</code> files, meaning other languages will have the same format and the same <code>msgid</code> fields but
+translated <code>msgstr</code> lines.</p>
+
+<p>Talking about translation keys, there are two main “schools” here:</p>
+
+<ol>
+  <li><em><code>msgid</code> as a real sentence</em>.
+ The main advantages are:
+    <ul>
+      <li>if there are pieces of the software untranslated in any given language, the key displayed will still maintain some
+ meaning. Example: if you happen to translate by heart from English to Spanish but need help to translate to French,
+ you might publish the new page with missing French sentences, and parts of the website would be displayed in English
+ instead;</li>
+      <li>it is much easier for the translator to understand what’s going on and do a proper translation based on the
+ <code>msgid</code>;</li>
+      <li>it gives you “free” l10n for one language - the source one;</li>
+      <li>The only disadvantage: if you need to change the actual text, you would need to replace the same <code>msgid</code>
+ across several language files.</li>
+    </ul>
+  </li>
+  <li><em><code>msgid</code> as a unique, structured key</em>.
+It would describe the sentence role in the application in a structured way, including the template or part where the
+string is located instead of its content.
+    <ul>
+      <li>it is a great way to have the code organized, separating the text content from the template logic.</li>
+      <li>however, that could bring problems to the translator that would miss the context. A source language file would be
+ needed as a basis for other translations. Example: the developer would ideally have an <code>en.po</code> file, that
+ translators would read to understand what to write in <code>fr.po</code> for instance.</li>
+      <li>missing translations would display meaningless keys on screen (<code>top_menu.welcome</code> instead of <code>Hello there, User!</code>
+ on the said untranslated French page). That is good it as would force translation to be complete before publishing -
+ however, bad as translation issues would be remarkably awful in the interface. Some libraries, though, include an
+ option to specify a given language as “fallback”, having a similar behavior as the other approach.</li>
+    </ul>
+  </li>
+</ol>
+
+<p>The <a href="https://www.gnu.org/software/gettext/manual/gettext.html">Gettext manual</a> favors the first approach as, in general, it is easier for translators and users in
+case of trouble. That is how we will be working here as well. However, the <a href="https://symfony.com/doc/current/components/translation/usage.html#creating-translations">Symfony documentation</a> favors
+keyword-based translation, to allow for independent changes of all translations without affecting templates as well.</p>
+
+<h3 id="everyday-usage">Everyday usage</h3>
+<p>In a typical application, you would use some Gettext functions while writing static text in your pages. Those sentences
+would then appear in <code>.po</code> files, get translated, compiled into <code>.mo</code> files and then, used by Gettext when rendering
+the actual interface. Given that, let’s tie together what we have discussed so far in a step-by-step example:</p>
+
+<h4 id="a-sample-template-file-including-some-different-gettext-calls">1. A sample template file, including some different gettext calls</h4>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span> <span class="k">include</span> <span class="s1">'i18n_setup.php'</span> <span class="cp">?&gt;</span>
+<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"header"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;h1&gt;</span><span class="cp">&lt;?=</span><span class="nb">sprintf</span><span class="p">(</span><span class="nb">gettext</span><span class="p">(</span><span class="s1">'Welcome, %s!'</span><span class="p">),</span> <span class="nv">$name</span><span class="p">)</span><span class="cp">?&gt;</span><span class="nt">&lt;/h1&gt;</span>
+    <span class="c">&lt;!-- code indented this way only for legibility --&gt;</span>
+    <span class="cp">&lt;?php</span> <span class="k">if</span> <span class="p">(</span><span class="nv">$unread</span><span class="p">)</span><span class="o">:</span> <span class="cp">?&gt;</span>
+        <span class="nt">&lt;h2&gt;</span><span class="cp">&lt;?=</span><span class="nb">sprintf</span><span class="p">(</span>
+            <span class="nb">ngettext</span><span class="p">(</span><span class="s1">'Only one unread message'</span><span class="p">,</span>
+                     <span class="s1">'%d unread messages'</span><span class="p">,</span>
+                     <span class="nv">$unread</span><span class="p">),</span>
+            <span class="nv">$unread</span><span class="p">)</span><span class="cp">?&gt;</span>
+        <span class="nt">&lt;/h2&gt;</span>
+    <span class="cp">&lt;?php</span> <span class="k">endif</span> <span class="cp">?&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+<span class="nt">&lt;h1&gt;</span><span class="cp">&lt;?=</span><span class="nb">gettext</span><span class="p">(</span><span class="s1">'Introduction'</span><span class="p">)</span><span class="cp">?&gt;</span><span class="nt">&lt;/h1&gt;</span>
+<span class="nt">&lt;p&gt;</span><span class="cp">&lt;?=</span><span class="nb">gettext</span><span class="p">(</span><span class="s1">'We\'re now translating some strings'</span><span class="p">)</span><span class="cp">?&gt;</span><span class="nt">&lt;/p&gt;</span></code></pre></div>
+
+<ul>
+  <li><a href="https://php.net/manual/en/function.gettext.php"><code>gettext()</code></a> simply translates a <code>msgid</code> into its corresponding <code>msgstr</code> for a given language. There’s also
+the shorthand function <code>_()</code> that works the same way;</li>
+  <li><a href="https://php.net/manual/en/function.ngettext.php"><code>ngettext()</code></a> does the same but with plural rules;</li>
+  <li>there’s also <a href="https://php.net/manual/en/function.dgettext.php"><code>dgettext()</code></a> and <a href="https://php.net/manual/en/function.dngettext.php"><code>dngettext()</code></a>, that allows you to override the domain for a single
+call. More on domain configuration in the next example.</li>
+</ul>
+
+<h4 id="a-sample-setup-file-i18nsetupphp-as-used-above-selecting-the-correct-locale-and-configuring-gettext">2. A sample setup file (<code>i18n_setup.php</code> as used above), selecting the correct locale and configuring Gettext</h4>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="sd">/**
+ * Verifies if the given $locale is supported in the project
+ * @param string $locale
+ * @return bool
+ */</span>
+<span class="k">function</span> <span class="nf">valid</span><span class="p">(</span><span class="nv">$locale</span><span class="p">)</span> <span class="p">{</span>
+   <span class="k">return</span> <span class="nb">in_array</span><span class="p">(</span><span class="nv">$locale</span><span class="p">,</span> <span class="p">[</span><span class="s1">'en_US'</span><span class="p">,</span> <span class="s1">'en'</span><span class="p">,</span> <span class="s1">'pt_BR'</span><span class="p">,</span> <span class="s1">'pt'</span><span class="p">,</span> <span class="s1">'es_ES'</span><span class="p">,</span> <span class="s1">'es'</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="c1">//setting the source/default locale, for informational purposes</span>
+<span class="nv">$lang</span> <span class="o">=</span> <span class="s1">'en_US'</span><span class="p">;</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">'lang'</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="nx">valid</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">'lang'</span><span class="p">]))</span> <span class="p">{</span>
+    <span class="c1">// the locale can be changed through the query-string</span>
+    <span class="nv">$lang</span> <span class="o">=</span> <span class="nv">$_GET</span><span class="p">[</span><span class="s1">'lang'</span><span class="p">];</span>    <span class="c1">//you should sanitize this!</span>
+    <span class="nb">setcookie</span><span class="p">(</span><span class="s1">'lang'</span><span class="p">,</span> <span class="nv">$lang</span><span class="p">);</span> <span class="c1">//it's stored in a cookie so it can be reused</span>
+<span class="p">}</span> <span class="k">elseif</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$_COOKIE</span><span class="p">[</span><span class="s1">'lang'</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="nx">valid</span><span class="p">(</span><span class="nv">$_COOKIE</span><span class="p">[</span><span class="s1">'lang'</span><span class="p">]))</span> <span class="p">{</span>
+    <span class="c1">// if the cookie is present instead, let's just keep it</span>
+    <span class="nv">$lang</span> <span class="o">=</span> <span class="nv">$_COOKIE</span><span class="p">[</span><span class="s1">'lang'</span><span class="p">];</span> <span class="c1">//you should sanitize this!</span>
+<span class="p">}</span> <span class="k">elseif</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">'HTTP_ACCEPT_LANGUAGE'</span><span class="p">]))</span> <span class="p">{</span>
+    <span class="c1">// default: look for the languages the browser says the user accepts</span>
+    <span class="nv">$langs</span> <span class="o">=</span> <span class="nb">explode</span><span class="p">(</span><span class="s1">','</span><span class="p">,</span> <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">'HTTP_ACCEPT_LANGUAGE'</span><span class="p">]);</span>
+    <span class="nb">array_walk</span><span class="p">(</span><span class="nv">$langs</span><span class="p">,</span> <span class="k">function</span> <span class="p">(</span><span class="o">&amp;</span><span class="nv">$lang</span><span class="p">)</span> <span class="p">{</span> <span class="nv">$lang</span> <span class="o">=</span> <span class="nb">strtr</span><span class="p">(</span><span class="nb">strtok</span><span class="p">(</span><span class="nv">$lang</span><span class="p">,</span> <span class="s1">';'</span><span class="p">),</span> <span class="p">[</span><span class="s1">'-'</span> <span class="o">=&gt;</span> <span class="s1">'_'</span><span class="p">]);</span> <span class="p">});</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$langs</span> <span class="k">as</span> <span class="nv">$browser_lang</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">valid</span><span class="p">(</span><span class="nv">$browser_lang</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nv">$lang</span> <span class="o">=</span> <span class="nv">$browser_lang</span><span class="p">;</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// here we define the global system locale given the found language</span>
+<span class="nb">putenv</span><span class="p">(</span><span class="s2">"LANG=</span><span class="nv">$lang</span><span class="s2">"</span><span class="p">);</span>
+
+<span class="c1">// this might be useful for date functions (LC_TIME) or money formatting (LC_MONETARY), for instance</span>
+<span class="nb">setlocale</span><span class="p">(</span><span class="nx">LC_ALL</span><span class="p">,</span> <span class="nv">$lang</span><span class="p">);</span>
+
+<span class="c1">// this will make Gettext look for ../locales/&lt;lang&gt;/LC_MESSAGES/main.mo</span>
+<span class="nb">bindtextdomain</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="s1">'../locales'</span><span class="p">);</span>
+
+<span class="c1">// indicates in what encoding the file should be read</span>
+<span class="nb">bind_textdomain_codeset</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="s1">'UTF-8'</span><span class="p">);</span>
+
+<span class="c1">// if your application has additional domains, as cited before, you should bind them here as well</span>
+<span class="nb">bindtextdomain</span><span class="p">(</span><span class="s1">'forum'</span><span class="p">,</span> <span class="s1">'../locales'</span><span class="p">);</span>
+<span class="nb">bind_textdomain_codeset</span><span class="p">(</span><span class="s1">'forum'</span><span class="p">,</span> <span class="s1">'UTF-8'</span><span class="p">);</span>
+
+<span class="c1">// here we indicate the default domain the gettext() calls will respond to</span>
+<span class="nb">textdomain</span><span class="p">(</span><span class="s1">'main'</span><span class="p">);</span>
+
+<span class="c1">// this would look for the string in forum.mo instead of main.mo</span>
+<span class="c1">// echo dgettext('forum', 'Welcome back!');</span>
+<span class="cp">?&gt;</span></code></pre></div>
+
+<h4 id="preparing-translation-for-the-first-run">3. Preparing translation for the first run</h4>
+<p>One of the great advantages Gettext has over custom framework i18n packages is its extensive and powerful file format.
+“Oh man, that’s quite hard to understand and edit by hand, a simple array would be easier!” Make no mistake,
+applications like <a href="https://poedit.net">Poedit</a> are here to help - <em>a lot</em>. You can get the program from <a href="https://poedit.net/download">their website</a>,
+it’s free and available for all platforms. It’s a pretty easy tool to get used to, and a very powerful one at the same
+time - using all features Gettext has available. This guide is based on PoEdit 1.8.</p>
+
+<p>In the first run, you should select “File &gt; New…” from the menu. You’ll be asked straight ahead for the language:
+here you can select/filter the language you want to translate to, or use that format we mentioned before, such as
+<code>en_US</code> or <code>pt_BR</code>.</p>
+
+<p>Now, save the file - using that directory structure we mentioned as well. Then you should click “Extract from sources”,
+and here you’ll configure various settings for the extraction and translation tasks. You’ll be able to find all those
+later through “Catalog &gt; Properties”:</p>
+
+<ul>
+  <li>Source paths: here you must include all folders from the project where <code>gettext()</code> (and siblings) are called - this
+is usually your templates/views folder(s). This is the only mandatory setting;</li>
+  <li>Translation properties:
+    <ul>
+      <li>Project name and version, Team and Team’s email address: useful information that goes in the .po file header;</li>
+      <li>Plural forms: here go those rules we mentioned before - there’s a link in there with samples as well. You can
+  leave it with the default option most of the time, as PoEdit already includes a handy database of plural rules for
+  many languages.</li>
+      <li>Charsets: UTF-8, preferably;</li>
+      <li>Source code charset: set here the charset used by your codebase - probably UTF-8 as well, right?</li>
+    </ul>
+  </li>
+  <li>Source keywords: The underlying software knows how <code>gettext()</code> and similar function calls look like in several
+programming languages, but you might as well create your own translation functions. It will be here you’ll add those
+other methods. This will be discussed later in the “Tips” section.</li>
+</ul>
+
+<p>After setting those points it will run a scan through your source files to find all the localization calls. After every
+scan PoEdit will display a summary of what was found and what was removed from the source files. New entries will fed
+empty into the translation table, and you’ll start typing in the localized versions of those strings. Save it and a .mo
+file will be (re)compiled into the same folder and ta-dah: your project is internationalized.</p>
+
+<h4 id="translating-strings">4. Translating strings</h4>
+<p>As you may have noticed before, there are two main types of localized strings: simple ones and those with plural
+forms. The first ones have simply two boxes: source and localized string. The source string cannot be modified as
+Gettext/Poedit do not include the powers to alter your source files - you should change the source itself and rescan
+the files. Tip: you may right-click a translation line and it will hint you with the source files and lines where that
+string is being used.
+On the other hand, plural form strings include two boxes to show the two source strings, and tabs so you can configure
+the different final forms.</p>
+
+<p>Whenever you change your sources and need to update the translations, just hit Refresh and Poedit will rescan the code,
+removing non-existent entries, merging the ones that changed and adding new ones. It may also try to guess some
+translations, based on other ones you did. Those guesses and the changed entries will receive a “Fuzzy” marker,
+indicating it needs review, appearing golden in the list. It is also useful if you have a translation team and someone
+tries to write something they are not sure about: just mark Fuzzy, and someone else will review later.</p>
+
+<p>Finally, it is advised to leave “View &gt; Untranslated entries first” marked, as it will help you <em>a lot</em> to not forget
+any entry. From that menu, you can also open parts of the UI that allow you to leave contextual information for
+translators if needed.</p>
+
+<h3 id="tips--tricks">Tips &amp; Tricks</h3>
+
+<h4 id="possible-caching-issues">Possible caching issues</h4>
+<p>If you are running PHP as a module on Apache (<code>mod_php</code>), you might face issues with the <code>.mo</code> file being cached. It
+happens the first time it is read, and then, to update it, you might need to restart the server. On Nginx and PHP5 it
+usually takes only a couple of page refreshes to refresh the translation cache, and on PHP7 it is rarely needed.</p>
+
+<h4 id="additional-helper-functions">Additional helper functions</h4>
+<p>As preferred by many people, it is easier to use <code>_()</code> instead of <code>gettext()</code>. Many custom i18n libraries from
+frameworks use something similar to <code>t()</code> as well, to make translated code shorter. However, that is the only function
+that sports a shortcut. You might want to add in your project some others, such as <code>__()</code> or <code>_n()</code> for <code>ngettext()</code>,
+or maybe a fancy <code>_r()</code> that would join <code>gettext()</code> and <code>sprintf()</code> calls. Other libraries, such as
+<a href="https://github.com/oscarotero/Gettext">oscarotero’s Gettext</a> also provide helper functions like these.</p>
+
+<p>In those cases, you’ll need to instruct the Gettext utility on how to extract the strings from those new functions.
+Don’t be afraid; it is very easy. It is just a field in the <code>.po</code> file, or a Settings screen on Poedit. In the editor,
+that option is inside “Catalog &gt; Properties &gt; Source keywords”. Remember: Gettext already knows the default functions
+for many languages, so don’t be afraid if that list seems empty. You need to include there the specifications of those
+new functions, following <a href="https://www.gnu.org/software/gettext/manual/gettext.html#Language-specific-options">a specific format</a>:</p>
+
+<ul>
+  <li>if you create something like <code>t()</code> that simply returns the translation for a string, you can specify it as <code>t</code>.
+Gettext will know the only function argument is the string to be translated;</li>
+  <li>if the function has more than one argument, you can specify in which one the first string is - and if needed, the
+plural form as well. For instance, if we call our function like this: <code>__('one user', '%d users', $number)</code>, the
+specification would be <code>__:1,2</code>, meaning the first form is the first argument, and the second form is the second
+argument. If your number comes as the first argument instead, the spec would be <code>__:2,3</code>, indicating the first form is
+the second argument, and so on.</li>
+</ul>
+
+<p>After including those new rules in the <code>.po</code> file, a new scan will bring in your new strings just as easy as before.</p>
+
+<h3 id="references">References</h3>
+
+<ul>
+  <li><a href="https://en.wikipedia.org/wiki/Internationalization_and_localization">Wikipedia: i18n and l10n</a></li>
+  <li><a href="https://en.wikipedia.org/wiki/Gettext">Wikipedia: Gettext</a></li>
+  <li><a href="https://lingohub.com/blog/2013/07/php-internationalization-with-gettext-tutorial/">LingoHub: PHP internationalization with gettext tutorial</a></li>
+  <li><a href="https://php.net/manual/en/book.gettext.php">PHP Manual: Gettext</a></li>
+  <li><a href="https://www.gnu.org/software/gettext/manual/gettext.html">Gettext Manual</a></li>
+</ul>
+

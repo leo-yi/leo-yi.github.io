@@ -1,0 +1,40 @@
+<h2 id="command_line_interface_title">命令行接口</h2>
+
+<p>PHP 是为开发 Web 应用而创建，不过它的命令行脚本接口(CLI)也非常有用。PHP 命令行编程可以帮你完成自动化的任务，如测试，部署和应用管理。</p>
+
+<p>CLI PHP 编程非常强大，可以直接调用你自己的程序代码而无需创建 Web 图形界面，需要注意的是 <strong>不要</strong> 把 CLI PHP 脚本放在公开的 web 目录下！</p>
+
+<p>在命令行下运行 PHP :</p>
+
+<div class="highlight"><pre><code class="language-console" data-lang="console"><span class="gp">&gt;</span> php <span class="nt">-i</span></code></pre></div>
+
+<p>选项 <code>-i</code> 将会打印 PHP 配置，类似于 <a href="https://secure.php.net/function.phpinfo"><code>phpinfo()</code></a> 函数。</p>
+
+<p>选项 <code>-a</code> 提供交互式 shell，和 Ruby 的 IRB 或 python 的交互式 shell 相似，此外还有很多其他有用的<a href="https://secure.php.net/features.commandline.options">命令行选项</a>。</p>
+
+<p>接下来写一个简单的 “Hello, $name” CLI 程序，先创建名为 <code>hello.php</code> 的脚本：</p>
+
+<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
+<span class="k">if</span><span class="p">(</span><span class="nv">$argc</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="s2">"Usage: php hello.php [name].</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span>
+    <span class="k">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="nv">$name</span> <span class="o">=</span> <span class="nv">$argv</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="k">echo</span> <span class="s2">"Hello, </span><span class="nv">$name</span><span class="se">\n</span><span class="s2">"</span><span class="p">;</span></code></pre></div>
+
+<p>PHP 会在脚本运行时根据参数设置两个特殊的变量，<a href="https://secure.php.net/reserved.variables.argc"><code>$argc</code></a> 是一个整数，表示参数<em>个数</em>，<a href="https://secure.php.net/reserved.variables.argv"><code>$argv</code></a> 是一个数组变量，包含每个参数的<em>值</em>，
+它的第一个元素一直是 PHP 脚本的名称，如本例中为 <code>hello.php</code>。</p>
+
+<p>命令运行失败时，可以通过 <code>exit()</code> 表达式返回一个非 0 整数来通知 shell，常用的 exit 返回码可以查看<a href="https://www.gsp.com/cgi-bin/man.cgi?section=3&amp;topic=sysexits">列表</a>.</p>
+
+<p>运行上面的脚本，在命令行输入：</p>
+
+<div class="highlight"><pre><code class="language-console" data-lang="console"><span class="gp">&gt;</span> php hello.php
+<span class="go">Usage: php hello.php [name]
+</span><span class="gp">&gt;</span> php hello.php world
+<span class="go">Hello, world</span></code></pre></div>
+
+<ul>
+  <li><a href="https://secure.php.net/features.commandline.options">学习如何在命令行运行 PHP</a></li>
+</ul>
+
